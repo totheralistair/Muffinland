@@ -1,5 +1,6 @@
-#run lambda { |env| [200, {'Content-Type'=>'text/plain'}, StringIO.new("Hello World!\n")] }
+run lambda { |env| [200, {'Content-Type'=>'text/plain'}, StringIO.new("Hello World!\n")] }
 
-require './src/muffinland'
+#require './src/muffinland'
+#run Muffinland.new
 
-run Muffinland.new
+
