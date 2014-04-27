@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>
+    View showrequest
+  </title>
+</head>
+
+<body>
+<p>
+  <b>Sinatra shows the request.env var as:</b>
+</p>
+<p>
+  <% request.env.each do |v| %>
+      <%= v.to_s %> <br />
+  <% end %>
+
+  <p><b>
+    and the allowed methods on the request object:
+  </b></p>
+  <p>
+    <% request.methods.each do |m| %>
+        <%= m.to_s %> <br />
+    <% end %>
+
+    #NEXT: need to learn how to run those methods
+    # e.g. request.m.run or whatever that is
+    <p><b>
+      the path on that request was:
+    </b></p>
+    <p>
+      <%= @request.path_info %>
+    </p>
+
+    <p><b>
+      the session on that request was:
+    </b></p>
+    <p>
+      <%= @request.session %>
+    </p>
+
+    <p>Tatty!</p>
+
+</body>
+</html>
+
