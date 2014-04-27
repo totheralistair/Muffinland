@@ -2,11 +2,8 @@
 # Alistair Cockburn and a couple of really nice friends
 
 require 'rack'
-require 'erb'
-
 
 class Muffinland
-
   def call(env)
     request  = Rack::Request.new(env)
     if request.get? then
@@ -17,10 +14,20 @@ class Muffinland
   end
 end
 
-def handle_post( request ) # expect Rack::Request, return Rack::Response
-  @myPosts ||= Array.new
-  @myPosts.push(request)
+def handle_get( request )
+  params = request.params
+  pathinfo = request.path_info
 
+  response = Rack::Response.new
+  response['Content-Type'] = 'text/html'
+  response.write "Nice GET there. "
+  response.write "Page requested = #{pathinfo}. "
+  response.write "Params = #{params}. "
+  response.write "Bests. Alistair."
+  response.finish
+end
+
+def handle_post( request ) # expect Rack::Request, return Rack::Response
   params = request.params
   pathinfo = request.path_info
 
@@ -31,45 +38,6 @@ def handle_post( request ) # expect Rack::Request, return Rack::Response
   response.write "Params = #{params}. "
   response.finish
 end
-
-
-
-def handle_get( request )
-  params = request.params
-  path = request.path
-
-  response = Rack::Response.new
-
-#  renderer = ERB.new("simple ERB template. ")
-#  erb :test1
-  renderer = ERB.new("boo")#File.open("test1.erb", 'r').read)
-  erbOut = renderer.result()
-
-#  erb :view01_justaview.erb
-  response['Content-Type'] = 'text/html'
-  response.write "it's a GET. "
-  response.write "Page requested = #{path}. "
-  response.write "Params = #{params}. "
-  response.write erbOut
-#  response.write outFor(path, params)
-  response.write "Bests. Alistair."
-  response.finish
-
-end
-
-def outFor(path, params)
-  puts path
-  case path
-    when "/0"
-      "0."
-    when "/aaa"
-      "aaa"
-    else
-      "whatever and :#{params}:"
-  end
-end
-
-
 
 
 
