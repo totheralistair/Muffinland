@@ -3,9 +3,10 @@
 
 require 'rack'
 require 'erb'
+require 'sinatra'
 
 
-class Muffinland
+class Muffinland < Sinatra::Base
 
   def call(env)
     request  = Rack::Request.new(env)
@@ -40,12 +41,9 @@ def handle_get( request )
 
   response = Rack::Response.new
 
-#  renderer = ERB.new("simple ERB template. ")
-#  erb :test1
-  renderer = ERB.new("boo")#File.open("test1.erb", 'r').read)
-  erbOut = renderer.result()
+#   erbOut = erb :test1
 
-#  erb :view01_justaview.erb
+  erbOut = erb :view01_justaview
   response['Content-Type'] = 'text/html'
   response.write "it's a GET. "
   response.write "Page requested = #{path}. "
