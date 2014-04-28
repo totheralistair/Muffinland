@@ -15,8 +15,7 @@ class Muffinland < Sinatra::Base
   end
 end
 
-def construct_page_from_template( pathToViews, viewfilename )
-  fn = pathToViews + viewfilename
+def page_from_template( fn )
   Erubis::Eruby.new(File.open( fn, 'r').read)
 end
 
@@ -26,15 +25,13 @@ def handle_get( request )
   path = request.path
 
   response = Rack::Response.new
-#  response['Content-Type'] = 'text/html'
 
   pathToViews = "../src/views/"
   viewfilename = "simpleGET.erb"
-  eruby = Erubis::Eruby.new(File.open( pathToViews+viewfilename, 'r').read)
-  response.write eruby.result(binding())
+  dynamic_page = page_from_template( pathToViews + viewfilename )
+  response.write dynamic_page.result(binding())
 
   response.finish
-
 end
 
 def outFor(path, params)
