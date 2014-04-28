@@ -2,6 +2,7 @@ GEM
   remote: http://rubygems.org/
   specs:
     diff-lcs (1.2.4)
+    erubis (2.7.0)
     rack (1.5.2)
     rack-protection (1.5.0)
       rack
@@ -20,6 +21,7 @@ PLATFORMS
   x86-mingw32
 
 DEPENDENCIES
+  erubis
   rack
   rack-test
   rspec-expectations
