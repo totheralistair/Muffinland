@@ -28,7 +28,6 @@ end
 def handle_get( request )
   path = request.path
   params = request.params
-  puts path
   case path
     when "/login"
       handle_login( path, params )
@@ -51,7 +50,6 @@ def handle_otherGET( path, params )
   dynamic_page = page_from_template( @viewsFolder + "simpleGET.erb" )
   response.write dynamic_page.result(binding())
   response.finish
-
 end
 
 
@@ -60,14 +58,12 @@ def handle_post( request ) # expect Rack::Request, return Rack::Response
   @myPosts ||= Array.new
   @myPosts.push(request)
 
+  path = request.path
   params = request.params
-  pathinfo = request.path_info
 
   response = Rack::Response.new
-  response['Content-Type'] = 'text/html'
-  response.write "Got that POST, baby. "
-  response.write "Page requested = #{pathinfo}. "
-  response.write "Params = #{params}. "
+  dynamic_page = page_from_template( @viewsFolder + "simplePOST.erb" )
+  response.write dynamic_page.result(binding())
   response.finish
 end
 
