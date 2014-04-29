@@ -1,6 +1,6 @@
 
 
-require_relative '../src/Muffinland5.rb'
+require_relative '../src/muffinland5.rb'
 
 Rack::Handler::WEBrick.run(
     Muffinland.new("../src/views/"),
