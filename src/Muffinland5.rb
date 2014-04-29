@@ -3,10 +3,15 @@
 
 require 'rack'
 require 'erb'
-require 'sinatra'
 require 'erubis'
 
-class Muffinland < Sinatra::Base
+class Muffinland
+  attr :viewsFolder
+
+  def initialize(viewsFolder)
+    @viewsFolder = viewsFolder
+  end
+
   def call(env)
     request  = Rack::Request.new(env)
     if request.get? then out = handle_get(request); end
@@ -15,41 +20,39 @@ class Muffinland < Sinatra::Base
   end
 end
 
-def construct_page_from_template( pathToViews, viewfilename )
-  fn = pathToViews + viewfilename
+def page_from_template( fn )
   Erubis::Eruby.new(File.open( fn, 'r').read)
 end
 
 
 def handle_get( request )
-  params = request.params
   path = request.path
-
-  response = Rack::Response.new
-#  response['Content-Type'] = 'text/html'
-
-  pathToViews = "../src/views/"
-  viewfilename = "simpleGET.erb"
-  eruby = Erubis::Eruby.new(File.open( pathToViews+viewfilename, 'r').read)
-  response.write eruby.result(binding())
-
-  response.finish
-
-end
-
-def outFor(path, params)
+  params = request.params
   puts path
   case path
-    when "/0"
-      "0."
-    when "/aaa"
-      "aaa"
+    when "/login"
+      handle_login( path, params )
     else
-      "whatever and :#{params}:"
+      handle_otherGET( path, params )
   end
 end
 
+def handle_login( path, params )
+  puts "in Login"
+  "login"
+  response = Rack::Response.new
+  dynamic_page = page_from_template( @viewsFolder + "simpleDataInput.erb" )
+  response.write dynamic_page.result(binding())
+  response.finish
+end
 
+def handle_otherGET( path, params )
+  response = Rack::Response.new
+  dynamic_page = page_from_template( @viewsFolder + "simpleGET.erb" )
+  response.write dynamic_page.result(binding())
+  response.finish
+
+end
 
 
 #===================================================

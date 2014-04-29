@@ -1,8 +1,9 @@
 
 
-require_relative '../src/muffinland.rb'
+require_relative '../src/Muffinland3b.rb'
 
 Rack::Handler::WEBrick.run(
     Muffinland.new,
     :Port => 8080
 )
+
