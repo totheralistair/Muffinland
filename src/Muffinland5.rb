@@ -1,6 +1,6 @@
 # Welcome to Muffinland, the lazy CMS (or something)
 # Alistair Cockburn and a couple of really nice friends
-
+#
 require 'rack'
 require 'erb'
 require 'erubis'
