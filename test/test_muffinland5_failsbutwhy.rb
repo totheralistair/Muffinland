@@ -20,14 +20,28 @@ class TestRequests < Test::Unit::TestCase
     app = Muffinland.new(viewsFolder)
 
     dynamic_page = page_from_template( viewsFolder + "simpleGET.erb" )
-
     path = '/a'
     params = '{"d"=>"e", "b"=>"c"}'
     expected = dynamic_page.result(binding())
     run_without_server( app, "GET", '/a?b=c', "d=e").body.should == expected
+  end
 
+  def test_01_post_without_server
+    viewsFolder = "../src/views/"
+    app = Muffinland.new(viewsFolder)
 
+    path = '/login'
+    params = '{"login"=>"Wow"}'
+    dynamic_page = page_from_template( viewsFolder + "testDataInputResponse1.erb" )
+    exp = dynamic_page.result(binding())
+    puts "EXPECTED: "
+    puts exp
 
+    got = run_without_server( app, "POST", '/login', "login=WoW").body
+    puts ".........."
+    puts "GOT: "
+    puts got
+    got.should == exp
   end
 
 end
