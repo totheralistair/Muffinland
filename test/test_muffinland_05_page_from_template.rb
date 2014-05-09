@@ -3,7 +3,7 @@ require 'rspec/expectations'
 require 'test/unit'
 require 'erubis'
 
-require_relative '../src/muffinland5.rb'
+require_relative '../src/muffinland_05_page_from_template.rb'
 
 class TestRequests < Test::Unit::TestCase
   include Rack::Test::Methods
@@ -18,29 +18,24 @@ class TestRequests < Test::Unit::TestCase
   def test_00_get_without_server
     viewsFolder = "../src/views/"
     app = Muffinland.new(viewsFolder)
-
-    dynamic_page = page_from_template( viewsFolder + "simpleGET.erb" )
     path = '/a'
     params = '{"d"=>"e", "b"=>"c"}'
-    expected = dynamic_page.result(binding())
-    run_without_server( app, "GET", '/a?b=c', "d=e").body.should == expected
+
+    dynamic_page = page_from_template( viewsFolder + "view_05_simpleGET.erb" )
+    exp = dynamic_page.result(binding())
+    got = run_without_server( app, "GET", '/a?b=c', "d=e").body
+    got.should == exp
   end
 
   def test_01_post_without_server
     viewsFolder = "../src/views/"
     app = Muffinland.new(viewsFolder)
-
     path = '/login'
-    params = '{"login"=>"Wow"}'
-    dynamic_page = page_from_template( viewsFolder + "testDataInputResponse1.erb" )
-    exp = dynamic_page.result(binding())
-    puts "EXPECTED: "
-    puts exp
+    params = '{"login"=>"Wow"}' #'{"login"=>"Wow"}'
 
-    got = run_without_server( app, "POST", '/login', "login=WoW").body
-    puts ".........."
-    puts "GOT: "
-    puts got
+    dynamic_page = page_from_template( viewsFolder + "view_05_data_input_response.erb" )
+    exp = dynamic_page.result(binding())
+    got = run_without_server( app, "POST", '/login',{"login"=>"Wow"}).body    # 'login=WoW').body
     got.should == exp
   end
 

@@ -6,7 +6,6 @@ require 'erb'
 require 'erubis'
 
 class Muffinland
-  attr :viewsFolder
 
   def initialize(viewsFolder)
     @viewsFolder = viewsFolder
@@ -33,11 +32,6 @@ def respond( templateFn, binding)
   response.finish
 end
 
-def post_contents( request )
-  puts request.body
-  request.body
-end
-
 #===== GETs =====
 def handle_get( request )
   path = request.path
@@ -46,31 +40,42 @@ def handle_get( request )
     when "/post"
       get_post( path, params )
     else
-      get_others( path, params )
+      get_named_page( path, params )
   end
 end
 
 def get_post( path, params )
-  respond( "simpleDataInput.erb", binding() )
+  post_number = @myPosts.size
+  respond( "POST_numbered_input1.erb", binding() )
+#  respond( "view_05_simpleDataInput.erb", binding() )
 end
 
-def get_0( path, params )
-  respond( "GET_0.erb", binding() )
+def get_named_page( path, params )
+  page_name = path[1..path.size]
+  page_number = page_name.to_i
+  if page_number < @myPosts.size then
+    requestedPost = @myPosts[page_number]
+    inputValue = requestedPost.params["InputValue"]
+    respond("GET_named_page1.erb", binding())
+  else
+    respond("404.erb", binding())
+  end
+
 end
 
-def get_others( path, params )
-  respond("simpleGET.erb", binding())
+def get_unknown( path, params )
+  respond("404.erb", binding())
 end
 
 #===================================================
 def handle_post( request ) # expect Rack::Request, return Rack::Response
 #  @myPosts ||= Array.new
   @myPosts.push(request)
-  size = @myPosts.size
+  size = @myPosts.size - 1
 
   path = request.path
   params = request.params
   inputValue = params["InputValue"]
 
-  respond("simplePOST.erb", binding())
+  respond("POST_response_to_input.erb", binding())
 end

@@ -2,7 +2,7 @@ require 'rack/test'
 require 'rspec/expectations'
 require 'test/unit'
 
-require_relative '../src/muffinland1.rb'
+require_relative '../src/muffinland_01_canned_w_wo_server.rb'
 
 class TestRequests < Test::Unit::TestCase
   include Rack::Test::Methods

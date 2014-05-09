@@ -40,14 +40,14 @@ def handle_login( path, params )
   puts "in Login"
   "login"
   response = Rack::Response.new
-  dynamic_page = page_from_template( @viewsFolder + "simpleDataInput.erb" )
+  dynamic_page = page_from_template( @viewsFolder + "view_05_simpleDataInput.erb" )
   response.write dynamic_page.result(binding())
   response.finish
 end
 
 def handle_otherGET( path, params )
   response = Rack::Response.new
-  dynamic_page = page_from_template( @viewsFolder + "simpleGET.erb" )
+  dynamic_page = page_from_template( @viewsFolder + "view_05_simpleGET.erb" )
   response.write dynamic_page.result(binding())
   response.finish
 end
@@ -62,7 +62,7 @@ def handle_post( request ) # expect Rack::Request, return Rack::Response
   params = request.params
 
   response = Rack::Response.new
-  dynamic_page = page_from_template( @viewsFolder + "simplePOST.erb" )
+  dynamic_page = page_from_template( @viewsFolder + "view_05_data_input_response.erb" )
   response.write dynamic_page.result(binding())
   response.finish
 end
