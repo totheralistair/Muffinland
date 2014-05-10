@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <title>
-    Muffinland POST response
+    Muffinland named page:
   </title>
 </head>
 <body>
-<h1>It's a POST</h1>
-<p> Post <%= size %> = "<%= inputValue %>"</p>
-<p> "<%= path %>" & <%= params %>.</p>
+<h1>It's a fetch of a named page</h1>
+<p> Muffin <%= muffin_number %> (using parameters <%= params %>) has content:</p>
+<p> "<%= muffin_contents %>"</p>
 <p> </p>
+<p>Tatty!</p>
 
 <h1>Welcome to Muffinland. So here's what you get to do:</h1>
 
@@ -29,6 +30,7 @@
 <p> </p>
 
 <p>Best Wishes, Alistair</p>
+
 </body>
 </html>
 

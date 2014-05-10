@@ -20,16 +20,25 @@ class Muffinland
   end
 end
 
-#===== utilities =====
+#===== These utilities should be in shared place one day =====
 def page_from_template( fn, binding )
   pageTemplate = Erubis::Eruby.new(File.open( fn, 'r').read)
   pageTemplate.result(binding)
 end
 
-def respond( templateFn, binding)
+def page_from_folder_template( folder, fn, binding )
+  page_from_template( folder+fn, binding)
+end
+
+def respondFromFullFn( templateFullFn, binding)
   response = Rack::Response.new
-  response.write  page_from_template( @viewsFolder + templateFn, binding )
+  response.write  page_from_template( templateFullFn, binding )
   response.finish
+end
+
+#===== These utilities belong here =====
+def respondMyFromViewsFolder( templateJustFn, binding)
+  respondFromFullFn( @viewsFolder + templateJustFn, binding )
 end
 
 #===== GETs =====
@@ -46,36 +55,35 @@ end
 
 def get_post( path, params )
   post_number = @myPosts.size
-  respond( "POST_numbered_input1.erb", binding() )
-#  respond( "view_05_simpleDataInput.erb", binding() )
+  respondMyFromViewsFolder( "POST_ask_for_input_01.erb", binding() )
 end
 
 def get_named_page( path, params )
-  page_name = path[1..path.size]
-  page_number = page_name.to_i
-  if page_number < @myPosts.size then
-    requestedPost = @myPosts[page_number]
-    inputValue = requestedPost.params["InputValue"]
-    respond("GET_named_page1.erb", binding())
+  muffin_name = path[1..path.size]
+  muffin_number = muffin_name.to_i
+  if muffin_number < @myPosts.size then
+    requestedPost = @myPosts[muffin_number]
+    muffin_contents = requestedPost.params["InputValue"]
+    respondMyFromViewsFolder("GET_named_page_01.erb", binding())
   else
-    respond("404.erb", binding())
+    respondMyFromViewsFolder("404_v01.erb", binding())
   end
 
 end
 
 def get_unknown( path, params )
-  respond("404.erb", binding())
+  respondMyFromViewsFolder("404_v01.erb", binding())
 end
 
 #===================================================
 def handle_post( request ) # expect Rack::Request, return Rack::Response
 #  @myPosts ||= Array.new
   @myPosts.push(request)
-  size = @myPosts.size - 1
+  targetLocation = @myPosts.size - 1
 
   path = request.path
   params = request.params
   inputValue = params["InputValue"]
 
-  respond("POST_response_to_input.erb", binding())
+  respondMyFromViewsFolder("POST_respond_to_input_01.erb", binding())
 end
