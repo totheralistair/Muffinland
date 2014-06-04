@@ -28,7 +28,7 @@ def handle_get( request )
 
   pathToViews = "../src/views/"
   viewfilename = "simpleGET.erb"
-  dynamic_page = page_from_template( pathToViews + viewfilename )
+  dynamic_page = unbound_page_from_template( pathToViews + viewfilename )
   response.write dynamic_page.result(binding())
 
   response.finish

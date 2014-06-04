@@ -41,7 +41,7 @@ def outFor(path, params)
   puts path
   case path
     when "/login"
-      handle_login params
+      get_post params
     when "/aaa"
       "aaa"
     else
