@@ -77,5 +77,5 @@ def handle_post( request ) # expect Rack::Request, return Rack::Response
   params = request.params
   inputValue = params["InputValue"]
 
-  respond("simplePOST.erb", binding())
+  respond("POST_response_to_input.erb", binding())
 end

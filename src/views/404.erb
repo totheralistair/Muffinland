@@ -3,21 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <title>
-    simpleGET:
+    Muffinland unknown page
   </title>
 </head>
 
 <body>
-<h1>It's a GET, but unknown page requested (404)</h1>
+<h1>Welcome to Muffinland. So here's what you get to do:</h1>
 
+<ol>
+  <li> Create new content by using the URL /post.
+    It will let you enter some content into a text field;
+    and will tell you what page that went into. </li>
+  <li> Look at old content by using the URL /0 or /1
+    or /(whatever the page number is you want to see).
+    It will show you the content of that page.  </li>
+</ol>
+<p> That is all that is working just now. Anything else gives you this page. </p>
 
-
-<p> Page requested is <%= path %> </p>
-<p> Params = <%= params %></p>
+<p> Page requested was "<%= path %>", with parameters <%= params %></p>
 <p> </p>
 <p> </p>
 
-<p>boo hoo!</p>
+<p>Best Wishes, Alistair</p>
 
 
 </body>
