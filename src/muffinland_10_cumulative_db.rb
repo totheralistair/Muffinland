@@ -64,7 +64,7 @@ def get_named_page( path, params )
 
   case
     when @myPosts.size == 0
-      respondFromViewsFolder("v10_404.erb", binding())
+      respondFromViewsFolder("v10_404.erb", binding( ) )
     when itsanumber && muffin_number < @myPosts.size
       show_muffin_numbered( muffin_number, path, params )
     else
