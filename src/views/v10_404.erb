@@ -21,6 +21,20 @@ Welcome to Muffinland. Nothing to be shown at that marker (yet).
     <input type="submit" name="EnterButton" value="Add"></p>
 </form>
 
+<p> Try choosing from one of these pages...</p>
+
+<ul>
+  <% (0..(@myPosts.size-1)).each do |index|
+    muffinurl = "http://localhost:9292/#{index}"
+  %>
+      <li> page <a href=<%=index%> >  <%=index%> </a>
+
+      </li>
+  <% end
+  %>
+</ul>
+
+
 
 <hr />
 
