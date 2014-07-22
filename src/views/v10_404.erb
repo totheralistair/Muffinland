@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>
+    Muffinland unknown page <%= path %>
+  </title>
+</head>
+
+<body>
+
+<hr />
+
+Muffinland: You requested an unknown page: <%= path %>.
+
+
+
+<form method="post" action="">
+  <p>Add muffin <%= next_available_muffin_number %>:
+    <input type="text" name="InputValue" value="" >
+    <input type="submit" name="EnterButton" value="Add"></p>
+</form>
+
+
+<hr />
+
+
+<p> Tech notes:</p>
+<p> Path sent in was "<%= path %>" </p>
+<p> Params were <%= params %></p>
+
+
+</body>
+</html>
+

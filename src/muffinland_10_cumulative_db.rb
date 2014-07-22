@@ -25,13 +25,13 @@ class Muffinland
 end
 
 #===== These utilities should be in shared place one day =====
+def page_from_folder_template( folder, fn, binding )
+  page_from_template( folder+fn, binding)
+end
+
 def page_from_template( fn, binding )
   pageTemplate = Erubis::Eruby.new(File.open( fn, 'r').read)
   pageTemplate.result(binding)
-end
-
-def page_from_folder_template( folder, fn, binding )
-  page_from_template( folder+fn, binding)
 end
 
 def respondFromFn( templateFullFn, binding)
@@ -60,23 +60,27 @@ end
 def get_named_page( path, params )
   muffin_name = path[1..path.size]
   muffin_number = muffin_name.to_i
+  itsanumber = (muffin_name == muffin_number.to_s)
 
-  if muffin_number < @myPosts.size then
-    show_muffin_numbered( muffin_number, path, params )
-  else
-    get_unknown( path, params )
+  case
+    when @myPosts.size == 0
+      respondFromViewsFolder("v10_404_noDB.erb", binding())
+    when itsanumber && muffin_number < @myPosts.size
+      show_muffin_numbered( muffin_number, path, params )
+    else
+      get_unknown( path, params )
   end
 end
 
 def show_muffin_numbered( muffin_number, path, params )
   muffin = @myPosts[muffin_number]
   muffin_contents = muffin.params["InputValue"]
-  respondFromViewsFolder("GET_named_page_10.erb", binding())
+  respondFromViewsFolder("v10_GET_named_page.erb", binding())
 end
 
 
 def get_unknown( path, params )
-  respondFromViewsFolder("404_v10.erb", binding())
+  respondFromViewsFolder("v10_404.erb", binding())
 end
 
 #===================================================

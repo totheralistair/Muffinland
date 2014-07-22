@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>
+    Muffinland page <%= muffin_number %>:
+  </title>
+</head>
+<body>
+
+<p>----- start of page <%= muffin_number %> -----</p>
+
+<%= muffin_contents %>
+
+<p>----- end of page <%= muffin_number %> -----</p>
+
+
+<form method="post" action="">
+  <p>Go ahead and add page <%= next_available_muffin_number %>:
+    <input type="text" name="InputValue" value="" >
+    <input type="submit" name="EnterButton" value="Add"></p>
+</form>
+
+
+<p> Otherwise, choose from one of these pages:</p>
+
+<ul>
+  <% (0..(@myPosts.size-1)).each do |index|
+       muffinurl = "http://localhost:9292/#{index}"
+  %>
+      <li> page <%=index%> is here
+        <a href=<%=index%> >  <%=muffinurl%> </a>
+      </li>
+  <% end
+  %>
+</ul>
+
+
+<hr />
+
+
+<p> Tech notes:</p>
+<p> Path sent in was "<%= path %>" </p>
+<p> Params were <%= params %></p>
+
+</body>
+</html>
+
