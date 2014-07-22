@@ -85,7 +85,6 @@ end
 
 #===================================================
 def handle_post( request ) # expect Rack::Request, return Rack::Response
-#  @myPosts ||= Array.new
   @myPosts.push(request)
   muffin_number = @myPosts.size - 1
 
