@@ -92,7 +92,7 @@ def handle_post( request ) # expect Rack::Request, return Rack::Response
   @myPosts.push(request)
 
   muffin_number = @myPosts.size - 1
-  @log.info("post:" + request.env.inspect)
+  @log.info("post request details:" + request.env.inspect)
   path = request.path
   params = request.params
   show_muffin_numbered( muffin_number, path, params )
