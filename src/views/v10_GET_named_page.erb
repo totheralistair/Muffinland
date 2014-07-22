@@ -25,14 +25,10 @@
 <p> Otherwise, choose from one of these pages...</p>
 
 <ul>
-  <% (0..(@myPosts.size-1)).each do |index|
-       muffinurl = "http://localhost:9292/#{index}"
-  %>
-      <li> page <a href=<%=index%> >  <%=index%> </a>
-
+  <% @myPosts.each_with_index {|muffin, index|   %>
+      <li> page <a href=<%=index%> >  <%=index%> </a>, submitted from <%= muffin.ip %>
       </li>
-  <% end
-  %>
+  <% }  %>
 </ul>
 
 
