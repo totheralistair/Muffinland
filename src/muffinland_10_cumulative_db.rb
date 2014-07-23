@@ -4,12 +4,16 @@
 require 'rack'
 require 'erb'
 require 'erubis'
+require 'logger'
 
 class Muffinland
 
   def initialize(viewsFolder)
     @viewsFolder = viewsFolder
     @myPosts = Array.new
+
+    @log = Logger.new(STDOUT)
+    @log.level = Logger::INFO
   end
 
   def next_available_muffin_number
@@ -87,9 +91,8 @@ end
 def handle_post( request ) # expect Rack::Request, return Rack::Response
   @myPosts.push(request)
 
-
   muffin_number = @myPosts.size - 1
-
+  @log.info("post request details:" + request.env.inspect)
   path = request.path
   params = request.params
   show_muffin_numbered( muffin_number, path, params )
