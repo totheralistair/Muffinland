@@ -29,14 +29,14 @@ def handle_get( request )
   path = request.path
   params = request.params
   case path
-    when "/login"
+    when "/login" #never used so far
       handle_login( path, params )
     else
       handle_otherGET( path, params )
   end
 end
 
-def handle_login( path, params )
+def handle_login( path, params ) #never used so far
   puts "in Login"
   "login"
   response = Rack::Response.new
