@@ -66,9 +66,10 @@ def get_named_page( path, params )
   muffin_number = muffin_name.to_i
   itsanumber = (muffin_name == muffin_number.to_s)
 
+    myPosts = @myPosts
   case
     when @myPosts.size == 0
-      respondFromViewsFolder("v10_404_EmptyDB.erb", binding( ) )
+      respondFromViewsFolder("404_on_EmptyDB.erb", binding( ) )
     when itsanumber && muffin_number < @myPosts.size
       show_muffin_numbered( muffin_number, path, params )
     else
@@ -79,12 +80,13 @@ end
 def show_muffin_numbered( muffin_number, path, params )
   muffin = @myPosts[muffin_number]
   muffin_contents = muffin.params["InputValue"]
-  respondFromViewsFolder("v10_GET_named_page.erb", binding())
+  myPosts = @myPosts
+  respondFromViewsFolder("GET_named_page.erb", binding())
 end
 
 
 def get_unknown( path, params )
-  respondFromViewsFolder("v10_404.erb", binding())
+  respondFromViewsFolder("404.erb", binding())
 end
 
 #===================================================

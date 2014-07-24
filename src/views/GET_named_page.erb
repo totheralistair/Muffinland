@@ -8,10 +8,6 @@
 </head>
 <body>
 
-<img src="http://alistair.cockburn.us/get/1830">
-
-
-
 <p>----- start of page <%= muffin_number %> -----</p>
 
 <%= muffin_contents %>
@@ -26,11 +22,11 @@
 </form>
 
 
-<p> Otherwise, choose from one of these pages...</p>
+<p> Otherwise, choose from one of these pages:</p>
 
 <ul>
   <% @myPosts.each_with_index {|muffin, index|   %>
-      <li> page <a href=<%=index%> >  <%=index%> </a>, submitted from <%= muffin.ip %>
+      <li> <a href=<%=index%> > page <%=index%> </a>, submitted from <%= muffin.ip %>
       </li>
   <% }  %>
 </ul>
@@ -43,6 +39,15 @@
 <p> Path sent in was "<%= path %>" </p>
 <p> Params were <%= params %></p>
 </pre>
+
+<p> You did good. Yes, I know that's bad English. </p>
+<img src="http://alistair.cockburn.us/get/1830">
+
+
+
+
+
+
 </body>
 </html>
 
