@@ -25,8 +25,13 @@
 <p> Otherwise, choose from one of these pages:</p>
 
 <ul>
-  <% @myPosts.each_with_index {|muffin, index|   %>
-      <li> <a href=<%=index%> > page <%=index%> </a>, submitted from <%= muffin.ip %>
+  <% @myPosts.each_with_index {|muffin, index|
+    who = muffin.ip
+    who = "Poor Alistair locked in his dungeon" if muffin.ip == "86.193.109.86"
+    who = "Poor Alistair locked in his dungeon" if muffin.ip == "::1"
+  %>
+
+      <li> <a href=<%=index%> > page <%=index%> </a>, submitted from <%= who %>
       </li>
   <% }  %>
 </ul>
