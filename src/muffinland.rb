@@ -29,24 +29,24 @@ class Muffinland
 end
 
 #===== These utilities should be in shared place one day =====
-def page_from_folder_template( folder, fn, binding )
+def page_from_folder_fn_template( folder, fn, binding )
   page_from_template( folder+fn, binding)
 end
 
-def page_from_template( fn, binding )
-  pageTemplate = Erubis::Eruby.new(File.open( fn, 'r').read)
-  pageTemplate.result(binding)
-end
-
-def respondFromFn( templateFullFn, binding)
+def response_using_template( templateFullFn, binding)
   response = Rack::Response.new
   response.write  page_from_template( templateFullFn, binding )
   response.finish
 end
 
+def page_from_template( templateFullFn, binding )
+  pageTemplate = Erubis::Eruby.new(File.open( templateFullFn, 'r').read)
+  pageTemplate.result(binding)
+end
+
 #===== These utilities belong here =====
-def respondFromViewsFolder( templateJustFn, binding)
-  respondFromFn( @viewsFolder + templateJustFn, binding )
+def response_using_view_folder( templateJustFn, binding)
+  response_using_template( @viewsFolder + templateJustFn, binding )
 end
 
 #===== GETs =====
@@ -66,10 +66,9 @@ def get_named_page( path, params )
   muffin_number = muffin_name.to_i
   itsanumber = (muffin_name == muffin_number.to_s)
 
-    myPosts = @myPosts
   case
     when @myPosts.size == 0
-      respondFromViewsFolder("404_on_EmptyDB.erb", binding( ) )
+      response_using_view_folder("404_on_EmptyDB.erb", binding( ) )
     when itsanumber && muffin_number < @myPosts.size
       show_muffin_numbered( muffin_number, path, params )
     else
@@ -80,13 +79,12 @@ end
 def show_muffin_numbered( muffin_number, path, params )
   muffin = @myPosts[muffin_number]
   muffin_contents = muffin.params["InputValue"]
-  myPosts = @myPosts
-  respondFromViewsFolder("GET_named_page.erb", binding())
+  response_using_view_folder("GET_named_page.erb", binding())
 end
 
 
 def get_unknown( path, params )
-  respondFromViewsFolder("404.erb", binding())
+  response_using_view_folder("404.erb", binding())
 end
 
 #===================================================

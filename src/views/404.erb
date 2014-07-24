@@ -11,7 +11,7 @@
 
 <hr />
 
-Welcome to Muffinland. Nothing to be shown at that marker (yet).
+Welcome to Muffinland. Nothing with that name (yet).
 
 
 
@@ -24,13 +24,10 @@ Welcome to Muffinland. Nothing to be shown at that marker (yet).
 <p> Try choosing from one of these pages:</p>
 
 <ul>
-  <% (0..(@myPosts.size-1)).each do |index|
-    muffinurl = "http://localhost:9292/#{index}"
-  %>
+  <% @myPosts.each_with_index {|muffin, index|   %>
       <li> <a href=<%=index%> > page <%=index%> </a>, submitted from <%= muffin.ip %>
       </li>
-  <% end
-  %>
+  <% }  %>
 </ul>
 
 
