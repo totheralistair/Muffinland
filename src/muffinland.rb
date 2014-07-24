@@ -1,6 +1,8 @@
 # Welcome to Muffinland, the lazy CMS (or something)
 # Alistair Cockburn and a couple of really nice friends
-#
+# some changes:
+# 2014-07-24 18:25 ending v0.010; working. starting v0.011, all about to become broken
+
 require 'rack'
 require 'erb'
 require 'erubis'
