@@ -13,7 +13,6 @@ class Muffinland
   def initialize(viewsFolder)
     @myPosts = Array.new
     @myMuffins = Array.new
-    @next_available_muffin_number = 0
 
     @log = Logger.new(STDOUT)
     @log.level = Logger::INFO
@@ -57,16 +56,14 @@ def handle_get( request )
   case
     when @myPosts.size == 0
       emit_response_using_known_viewFolder("404_on_EmptyDB.erb", binding( ) )
-    when itsanumber && muffin_number < @myPosts.size
-      show_muffin_numbered( muffin_number, request )
+    when itsanumber && muffin_number < @myPosts.size  #WRONG. is really a *muffin* number! TODO
+      show_muffin_numbered( muffin_number )
     else
       emit_response_using_known_viewFolder("404.erb", binding())
   end
 end
 
-def show_muffin_numbered( muffin_number, request )
-  muffin = @myPosts[muffin_number]
-  muffin_contents = muffin.params["MuffinContents"]
+def show_muffin_numbered( muffin_number )
   emit_response_using_known_viewFolder("GET_named_page.erb", binding())
 end
 
@@ -78,16 +75,16 @@ end
 
 def handle_add_new_muffin( request ) # expect Rack::Request, emit Rack::Response
   muffin_number = add_new_muffin(request)
-  show_muffin_numbered( muffin_number, request )
+  show_muffin_numbered( muffin_number )
 end
 
 def add_new_muffin( request ) # expect Rack::Request
   @log.info("Received post request with details:" + request.env.inspect)
 
-  muffin_number = @next_available_muffin_number
-  request.env["muffinNumber"] = muffin_number.to_s
-  @myPosts.push(request)
-  @next_available_muffin_number += 1
+  muffin_number = @myMuffins.size
+  request.env["muffinNumber"] = muffin_number.to_s  # explicitly add muffinNumber to the defining request
+  @myMuffins.push(@myPosts.size)  # @myMuffins indicates which @myPost entry is its defn
+  @myPosts.push(request)          # @myPosts holds the actual definition
   return muffin_number
 end
 

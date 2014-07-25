@@ -3,20 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <title>
-    Muffinland page <%= muffin_number %>:
+    Muffinland page
+        <%= request_number = @myMuffins[muffin_number]
+            request = @myPosts[request_number]
+            muffinNumberInRequest = request.env["muffinNumber"]
+            muffin_number
+        %>:
   </title>
 </head>
 <body>
 
-<p>----- start of page <%= muffin_number %> -----</p>
+<p>----- start of muffin number <%= muffin_number %> -----</p>
+<p>----- recorded in request number  <%= request_number %> -----</p>
+<p>----- which claims the muffin number is <%= muffinNumberInRequest %> -----</p>
 
-<%= muffin_contents %>
+<%=
+    muffin_contents = request.params["MuffinContents"]
+    muffin_contents
+%>
 
 <p>----- end of page <%= muffin_number %> -----</p>
 
 
 <form method="post" action="">
-  <p>Go ahead and add page <%= @next_available_muffin_number %>:
+  <p>Go ahead and add page <%= @myMuffins.size %>:
     <input type="text" name="MuffinContents" value="" >
     <br />Tag it as belonging to a page? page:
     <input type="text" name="CollectionNumber" value="" >
@@ -28,10 +38,10 @@
 <p> Otherwise, choose from one of these pages:</p>
 
 <ul>
-  <% @myPosts.each_with_index {|muffin, index|
-    who = muffin.ip
-    who = "Poor Alistair locked in his dungeon" if muffin.ip == "86.193.109.86"
-    who = "Poor Alistair locked in his dungeon" if muffin.ip == "::1"
+  <% @myPosts.each_with_index {|defReq, index|
+    who = defReq.ip
+    who = "Poor Alistair locked in his dungeon" if defReq.ip == "86.193.109.86"
+    who = "Poor Alistair locked in his dungeon" if defReq.ip == "::1"
   %>
 
       <li> <a href=<%=index%> > page <%=index%> </a>, submitted from <%= who %>
