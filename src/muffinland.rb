@@ -11,11 +11,12 @@ require 'logger'
 class Muffinland
 
   def initialize(viewsFolder)
-    @viewsFolder = viewsFolder
     @myPosts = Array.new
     @next_available_muffin_number = 0
+
     @log = Logger.new(STDOUT)
     @log.level = Logger::INFO
+    @viewsFolder = viewsFolder
   end
 
   def next_available_muffin_number
@@ -41,7 +42,7 @@ class Muffinland
   end
 end
 
-#===== These utilities should be in a shared place one day =====
+#===== These i/o utilities should be in a shared place one day =====
 def page_from_template( templateFullFn, binding )
   pageTemplate = Erubis::Eruby.new(File.open( templateFullFn, 'r').read)
   pageTemplate.result(binding)
@@ -82,20 +83,14 @@ def show_muffin_numbered( muffin_number, path, params )
   emit_response_using_known_viewFolder("GET_named_page.erb", binding())
 end
 
+def show_muffin( muffin, path, params )
+  emit_response_using_known_viewFolder("GET_show_muffin.erb", binding())
+end
+
 
 #===================================================
 def handle_post( request ) # expect Rack::Request, emit Rack::Response
-  path = request.path
-  params = request.params
-  print params
-  case
-    when params.has_key?("AddNewMuffin")
-      handle_add_new_muffin(request)
-    when params.has_key?("PutMuffinIntoCollection")
-      handle_add_to_collection(request)
-    else
-      print "DOIN NUTHNG"
-  end
+  handle_add_new_muffin(request)
 end
 
 def handle_add_new_muffin( request ) # expect Rack::Request, emit Rack::Response
@@ -103,14 +98,15 @@ def handle_add_new_muffin( request ) # expect Rack::Request, emit Rack::Response
   show_muffin_numbered( muffin_number, request.path, request.params )
 end
 
-def add_new_muffin( request ) # expect Rack::Request, return muffin_number
+def add_new_muffin( request ) # expect Rack::Request
+  @log.info("Received post request with details:" + request.env.inspect)
   muffin_number = next_available_muffin_number
   request.env["muffinNumber"] = muffin_number.to_s
   @myPosts.push(request)
-  @log.info("Received post request with details:" + request.env.inspect)
   bump_next_available_muffin_number
-  out = muffin_number
+  return muffin_number
 end
+
 def handle_add_to_collection( request ) # expect Rack::Request, emit Rack::Response
   print "GOONA ADD MUFF TO COLL"
 
