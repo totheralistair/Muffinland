@@ -70,7 +70,18 @@ end
 
 #===================================================
 def handle_post( request ) # expect Rack::Request, emit Rack::Response
-  handle_add_new_muffin(request)
+#  handle_add_new_muffin(request)
+  path = request.path
+  params = request.params
+  print params
+  case
+    when params.has_key?("Go")
+      handle_add_new_muffin(request)
+    when params.has_key?("Change")
+      handle_change_muffin(request)
+    else
+      print "DOIN NUTHNG"
+  end
 end
 
 def handle_add_new_muffin( request ) # expect Rack::Request, emit Rack::Response
@@ -78,12 +89,29 @@ def handle_add_new_muffin( request ) # expect Rack::Request, emit Rack::Response
   show_muffin_numbered( muffin_number )
 end
 
-def add_new_muffin( request ) # expect Rack::Request
+def add_new_muffin( request ) # expect Rack::Request, return muffin number
   @log.info("Received post request with details:" + request.env.inspect)
 
   muffin_number = @myMuffins.size
   request.env["muffinNumber"] = muffin_number.to_s  # explicitly add muffinNumber to the defining request
   @myMuffins.push(@myPosts.size)  # @myMuffins indicates which @myPost entry is its defn
+  @myPosts.push(request)          # @myPosts holds the actual definition
+  return muffin_number
+end
+
+def handle_change_muffin( request ) # expect Rack::Request, emit Rack::Response
+  print "gonna change some sucker"
+  @log.info("Received change request with details:" + request.env.inspect)
+  muffin_number = change_muffin( request )
+  show_muffin_numbered( muffin_number )
+end
+
+def change_muffin( request ) # expect Rack::Request, return muffin number
+  @log.info("Received change request with details:" + request.env.inspect)
+
+  muffin_number = request.params["MuffinNumber"].to_i
+  request.env["muffinNumber"] = muffin_number.to_s  # explicitly add muffinNumber to the defining request
+  @myMuffins[muffin_number] = @myPosts.size  # @myMuffins indicates which @myPost entry is its defn
   @myPosts.push(request)          # @myPosts holds the actual definition
   return muffin_number
 end

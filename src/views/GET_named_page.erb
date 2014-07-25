@@ -13,9 +13,10 @@
 </head>
 <body>
 
-<p>----- start of muffin number <%= muffin_number %> -----</p>
-<p>----- recorded in request number  <%= request_number %> -----</p>
-<p>----- which claims the muffin number is <%= muffinNumberInRequest %> -----</p>
+<p>-----
+  muffin <%= muffin_number %>,
+  stored in request <%= request_number %>
+  (claiming to be muffin <%= muffinNumberInRequest %>):</p>
 
 <%=
     muffin_contents = request.params["MuffinContents"]
@@ -28,14 +29,36 @@
 <form method="post" action="">
   <p>Go ahead and add page <%= @myMuffins.size %>:
     <input type="text" name="MuffinContents" value="" >
-    <br />Tag it as belonging to a page? page:
-    <input type="text" name="CollectionNumber" value="" >
     <br />  <input type="submit" name="Go" value="Go">
+  </p>
+</form>
+
+<form method="post" action="">
+  <p>Or change page
+    <input type="number" name="MuffinNumber" value="0" >
+    to become
+    <input type="text" name="MuffinContents" value="" >
+    <br />  <input type="submit" name="Change" value="Change">
   </p>
 </form>
 
 
 <p> Otherwise, choose from one of these pages:</p>
+
+<ul>
+  <% @myMuffins.each_with_index {|defReqNum, index|
+    defReq = @myPosts[defReqNum]
+    who = defReq.ip
+    who = "Poor Alistair locked in his dungeon" if defReq.ip == "86.193.109.86"
+    who = "Poor Alistair locked in his dungeon" if defReq.ip == "::1"
+  %>
+
+  <li> <a href=<%=index%> > Muffin <%=index%> </a>, submitted from <%= who %>
+  </li>
+  <% }  %>
+</ul>
+
+<p> Or, for the hard core, check the actual requests:</p>
 
 <ul>
   <% @myPosts.each_with_index {|defReq, index|
@@ -44,8 +67,8 @@
     who = "Poor Alistair locked in his dungeon" if defReq.ip == "::1"
   %>
 
-      <li> <a href=<%=index%> > page <%=index%> </a>, submitted from <%= who %>
-      </li>
+  <li> Muffin <%= defReq.env["muffinNumber"] %>, from input <%= defReq.params %>
+  </li>
   <% }  %>
 </ul>
 
