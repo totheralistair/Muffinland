@@ -116,8 +116,8 @@ def change_muffin( request ) # expect Rack::Request, return muffin number
 end
 
 def handle_tag_muffin( request ) # expect Rack::Request, emit Rack::Response
-  @log.info("Received tag request with details:" + request.env.inspect)
   muffin_number = tag_muffin( request )
+  @log.info("Received tag request with details:" + request.env.inspect)
   show_muffin_numbered( muffin_number )
 end
 
@@ -132,7 +132,7 @@ def tag_muffin( request ) # expect Rack::Request, return muffin number
 end
 
 def muffin_number( request )
-  request.env["muffinNumber"]
+  request.env["muffinNumber"].to_i
 end
 
 def request_is_tagged_to_collector( request, collector_number )
@@ -141,11 +141,13 @@ def request_is_tagged_to_collector( request, collector_number )
 end
 
 def collectors_of( muffin_number ) # return (possibly empty) array of collector numbers
-  tag_requests = @myPosts.select{ | request |
-      request.env.has_key?( "collectorNumber" ) &&
-        muffin_number(request)== muffin_number
+  collecting_requests = @myPosts.select{ | request |
+    request.env.has_key?( "collectorNumber" )
   }
-  out = tag_requests.map { | request | muffin_number(request) }
+  tag_requests = collecting_requests.select{ | request |
+    muffin_number(request) == muffin_number
+  }
+  tag_requests.map { | request | request.env["collectorNumber"].to_i }
 end
 
 
