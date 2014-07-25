@@ -24,6 +24,9 @@
 %>
 
 <p>----- end of page <%= muffin_number %> -----</p>
+<p> and is tagged to belong to these collections (if any):</p>
+<%= collectors_of(muffin_number)%>
+
 
 
 <form method="post" action="">

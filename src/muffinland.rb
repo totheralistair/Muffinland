@@ -80,19 +80,20 @@ def handle_post( request ) # expect Rack::Request, emit Rack::Response
       handle_add_new_muffin(request)
     when params.has_key?("Change")
       handle_change_muffin(request)
+    when params.has_key?("Tag")
+      handle_tag_muffin(request)
     else
       print "DOIN NUTHNG"
   end
 end
 
 def handle_add_new_muffin( request ) # expect Rack::Request, emit Rack::Response
+  @log.info("Received post request with details:" + request.env.inspect)
   muffin_number = add_new_muffin(request)
   show_muffin_numbered( muffin_number )
 end
 
 def add_new_muffin( request ) # expect Rack::Request, return muffin number
-  @log.info("Received post request with details:" + request.env.inspect)
-
   muffin_number = @myMuffins.size
   request.env["muffinNumber"] = muffin_number.to_s  # explicitly add muffinNumber to the defining request
   @myMuffins.push(@myPosts.size)  # @myMuffins indicates which @myPost entry is its defn
@@ -101,19 +102,50 @@ def add_new_muffin( request ) # expect Rack::Request, return muffin number
 end
 
 def handle_change_muffin( request ) # expect Rack::Request, emit Rack::Response
-  print "gonna change some sucker"
   @log.info("Received change request with details:" + request.env.inspect)
   muffin_number = change_muffin( request )
   show_muffin_numbered( muffin_number )
 end
 
 def change_muffin( request ) # expect Rack::Request, return muffin number
-  @log.info("Received change request with details:" + request.env.inspect)
-
   muffin_number = request.params["MuffinNumber"].to_i
   request.env["muffinNumber"] = muffin_number.to_s  # explicitly add muffinNumber to the defining request
   @myMuffins[muffin_number] = @myPosts.size  # @myMuffins indicates which @myPost entry is its defn
   @myPosts.push(request)          # @myPosts holds the actual definition
   return muffin_number
 end
+
+def handle_tag_muffin( request ) # expect Rack::Request, emit Rack::Response
+  @log.info("Received tag request with details:" + request.env.inspect)
+  muffin_number = tag_muffin( request )
+  show_muffin_numbered( muffin_number )
+end
+
+def tag_muffin( request ) # expect Rack::Request, return muffin number
+  muffin_number = request.params["MuffinNumber"].to_i
+  collector_number = request.params["CollectorNumber"].to_i
+  request.env["muffinNumber"] = muffin_number.to_s  # explicitly add muffinNumber to the defining request
+  request.env["collectorNumber"] = collector_number.to_s  # THIS IS SILLY. STOP IT.
+  @myMuffins[muffin_number] = @myPosts.size  # @myMuffins indicates which @myPost entry is its defn
+  @myPosts.push(request)          # @myPosts holds the actual definition
+  return muffin_number
+end
+
+def muffin_number( request )
+  request.env["muffinNumber"]
+end
+
+def request_is_tagged_to_collector( request, collector_number )
+  request.env.has_key?( "collectorNumber" ) &&
+      request.env["collectorNumber"].to_i == collector_number
+end
+
+def collectors_of( muffin_number ) # return (possibly empty) array of collector numbers
+  tag_requests = @myPosts.select{ | request |
+      request.env.has_key?( "collectorNumber" ) &&
+        muffin_number(request)== muffin_number
+  }
+  out = tag_requests.map { | request | muffin_number(request) }
+end
+
 
