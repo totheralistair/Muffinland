@@ -59,7 +59,8 @@ def handle_get( request )
     when itsanumber && muffin_number < @myPosts.size  #WRONG. is really a *muffin* number! TODO
       show_muffin_numbered( muffin_number )
     else
-      emit_response_using_known_viewFolder("404.erb", binding())
+      show_muffin_numbered( 0 )
+      #emit_response_using_known_viewFolder("404.erb", binding())
   end
 end
 
