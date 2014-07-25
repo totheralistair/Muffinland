@@ -16,7 +16,7 @@ Welcome to Muffinland.
 
 
 <form method="post" action="">
-  <p>Add something, the first thing, at page <%= next_available_muffin_number %>:
+  <p>Add something, the first thing, at page <%= @next_available_muffin_number %>:
     <input type="text" name="MuffinContents" value="" >
     <input type="submit" name="Go" value="Go"></p>
 </form>
@@ -26,8 +26,8 @@ Welcome to Muffinland.
 
 
 <p> Tech notes:</p>
-<p> Path sent in was "<%= path %>" </p>
-<p> Params were <%= params %></p>
+<p> Path sent in was "<%= request.path %>" </p>
+<p> Params were <%= request.params %></p>
 
 </body>
 </html>

@@ -16,7 +16,7 @@
 
 
 <form method="post" action="">
-  <p>Go ahead and add page <%= next_available_muffin_number %>:
+  <p>Go ahead and add page <%= @next_available_muffin_number %>:
     <input type="text" name="MuffinContents" value="" >
     <br />Tag it as belonging to a page? page:
     <input type="text" name="CollectionNumber" value="" >
@@ -44,8 +44,8 @@
 
 <pre>
 <p> Tech notes:</p>
-<p> Path sent in was "<%= path %>" </p>
-<p> Params were <%= params %></p>
+<p> Path sent in was "<%= request.path %>" </p>
+<p> Params were <%= request.params %></p>
 </pre>
 
 <p> You did good. <br />
