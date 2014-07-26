@@ -22,6 +22,15 @@ def page_from_template( templateFullFn, binding )
   pageTemplate.result(binding)
 end
 
+def requested_nameAndNumber_from_path( request )
+  name = request.path[1..request.path.size]
+  number = name.to_i
+  number = nil if (name != number.to_s)
+  return name, number
+end
+
+
+
 
 #=====
 class Muffinland
@@ -56,7 +65,7 @@ end
 #===== GETs =====
 def handle_get( request )
 
-  muffin_name, muffin_number = @theHistorian.requested_nameAndNumber_from( request )
+  muffin_name, muffin_number = requested_nameAndNumber_from_path( request )
 
   case
     when @theHistorian.no_history_to_report
@@ -99,44 +108,41 @@ end
 
 #===================================================
 def handle_post( request ) # expect Rack::Request, emit Rack::Response
-  @theHistorian.add_request( request )
   @log.info("Just received POST:" + request.env.inspect)
-  params = request.params
+
+  @theHistorian.add_request( request )
+
   case   # dangerous: button names are in the Requests as commands!
-    when params.has_key?("Go")
+    when request.params.has_key?("Go")
       handle_add_new_muffin(request)
-=begin
-    when params.has_key?("Change")
+    when request.params.has_key?("Change")
       handle_change_muffin(request)
-    when params.has_key?("Tag")
+    when request.params.has_key?("Tag")
       handle_tag_muffin(request)
-=end
     else
       print "DOIN NUTHNG"
   end
+
 end
 
 def handle_add_new_muffin( request ) # expect Rack::Request, emit Rack::Response
   muffin_number = @theBaker.add_new_muffin(request)
-  @log.info("Added post:" + request.env.inspect)
   show_muffin_numbered( muffin_number )
+end
+
+def handle_change_muffin( request ) # expect Rack::Request, emit Rack::Response
+  muffin_number = request.params["MuffinNumber"].to_i
+
+  case
+    when @theBaker.isa_registered_muffin( muffin_number)
+      @theBaker.change_muffin_per_request( muffin_number, request )
+      show_muffin_numbered( muffin_number )
+    else
+      show_404_basic( request, muffin_number.to_s )
+  end
 end
 
 =begin
-def handle_change_muffin( request ) # expect Rack::Request, emit Rack::Response
-  @log.info("Received change request with details:" + request.env.inspect)
-  muffin_number = change_muffin( request )
-  show_muffin_numbered( muffin_number )
-end
-
-def change_muffin( request ) # expect Rack::Request, return muffin number
-  muffin_number = request.params["MuffinNumber"].to_i
-  request.env["muffinNumber"] = muffin_number.to_s  # explicitly add muffinNumber to the defining request
-  @myMuffins[muffin_number] = @myPosts.size  # @myMuffins indicates which @myPost entry is its defn
-  @myPosts.push(request)          # @myPosts holds the actual definition
-  return muffin_number
-end
-
 def handle_tag_muffin( request ) # expect Rack::Request, emit Rack::Response
   muffin_number = tag_muffin( request )
   @log.info("Received tag request with details:" + request.env.inspect)
@@ -180,11 +186,19 @@ class Muffin
   def initialize( number, defining_request)
     @myNumber = number
     @myRaw = defining_request.params["MuffinContents"]
+
+    @log = Logger.new(STDOUT)
+    @log.level = Logger::INFO
   end
 
   def raw
     @myRaw
   end
+
+  def new_contents_from_request( request )
+    @myRaw = request.params["MuffinContents"]
+  end
+
 end
 
 #===================
@@ -192,6 +206,9 @@ class Historian # knows the history of what has happened, all Posts
 
   def initialize
     @thePosts = Array.new
+
+    @log = Logger.new(STDOUT)
+    @log.level = Logger::INFO
   end
 
   def no_history_to_report;  @thePosts.size == 0; end
@@ -203,13 +220,6 @@ class Historian # knows the history of what has happened, all Posts
     @thePosts << request
   end
 
-  def requested_nameAndNumber_from( request )
-    muffin_name = request.path[1..request.path.size]
-    muffin_number = muffin_name.to_i
-    muffin_number = nil if (muffin_name != muffin_number.to_s)
-    return muffin_name, muffin_number
-  end
-
 end
 
 
@@ -218,6 +228,9 @@ class Baker # knows the whereabouts and handlings of muffins.
 
   def initialize
     @theMuffins = Array.new
+
+    @log = Logger.new(STDOUT)
+    @log.level = Logger::INFO
   end
 
   def dangerously_all_muffins; @theMuffins; end #yep, dangerous. remove eventually
@@ -231,14 +244,27 @@ class Baker # knows the whereabouts and handlings of muffins.
     @theMuffins[muffin_number].raw
   end
 
-  def add_new_muffin( request ) # expect Rack::Request, modify the Request, return muffin number
+  def add_new_muffin( request ) # expect Rack::Request, modify the Request!, return muffin number
     muffin_number = @theMuffins.size
 
     request.env["muffinNumber"] = muffin_number.to_s  #  modify the defining request!!
     @theMuffins << Muffin.new( muffin_number, request )
 
+    @log.info("Added post:" + request.env.inspect)
     return muffin_number
   end
+
+  def change_muffin_per_request( muffin_number, request ) # expect Rack::Request, modify the Request! return muffin number
+    return nil if !isa_registered_muffin( muffin_number)
+
+    request.env["muffinNumber"] = muffin_number.to_s  #  modify the defining request!!
+    @theMuffins[muffin_number].new_contents_from_request( request )
+
+    @log.info("Changed muffin:" + request.env.inspect)
+    return muffin_number
+  end
+
+
 
 end
 

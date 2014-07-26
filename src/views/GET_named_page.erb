@@ -20,6 +20,15 @@
   </p>
 </form>
 
+<form method="post" action="">
+  <p>Or change muffin number
+    <input type="number" name="MuffinNumber" min="0" max="20000">
+    to contain:
+    <input type="text" name="MuffinContents" value="" >
+    <br />  <input type="submit" name="Change" value="Change">
+  </p>
+</form>
+
 The Muffins:
 <% show[:dangerously_all_muffins].each_with_index { |value, index | %>
     <p> <a href="<%= index %>">Muffin <%= index %> </a> is <%= value %> </p>
