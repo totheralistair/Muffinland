@@ -153,11 +153,35 @@ end
 
 
 #===================
-class Muffin
+class Librarian
+
+  attr_reader :myNumber, :myContents
+  attr_reader :myPrimaryCollection,:inCollections
+
   def initialize( number, defining_request)
     @myNumber = number
+    @myContents = defining_request.params["MuffinContents"]
+    @primaryCollection = nil
+    @inCollections = Set.new() # want collections non-duplicated
   end
 
-  def number; @myNumber; end
 
 end
+
+#===================
+class Muffin
+
+  attr_reader :myNumber, :myContents
+  attr_reader :myPrimaryCollection,:inCollections
+
+  def initialize( number, defining_request)
+    @myNumber = number
+    @myContents = defining_request.params["MuffinContents"]
+    @primaryCollection = nil
+    @inCollections = Set.new() # want collections non-duplicated
+  end
+
+
+end
+
+

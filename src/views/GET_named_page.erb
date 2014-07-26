@@ -4,19 +4,30 @@
   <meta charset="UTF-8">
   <title>
     Muffinland page
+
+<!--
+-comment-
         <%= request_number = @myMuffins[muffin_number]
             request = @myPosts[request_number]
             muffinNumberInRequest = request.env["muffinNumber"]
             muffin_number
         %>:
+-eComment-
+-->
+
   </title>
 </head>
 <body>
 
 <p>-----
   muffin <%= muffin_number %>,
-  stored in request <%= request_number %>
-  (claiming to be muffin <%= muffinNumberInRequest %>):</p>
+
+<!--
+-comment-
+          stored in request <%= request_number %>
+          (claiming to be muffin <%= muffinNumberInRequest %>):</p>
+-eComment
+-->
 
 <%=
     muffin_contents = request.params["MuffinContents"]
@@ -24,8 +35,14 @@
 %>
 
 <p>----- end of page <%= muffin_number %> -----</p>
-<p> and is tagged to belong to these collections (if any):</p>
-<%= collectors_of(muffin_number)%>
+
+
+<!--
+-comment
+            <p> and is tagged to belong to these collections (if any):</p>
+            <%= collectors_of(muffin_number)%>
+-eComment
+-->
 
 
 
@@ -36,54 +53,63 @@
   </p>
 </form>
 
-<form method="post" action="">
-  <p>Or change page
-    <input type="number" name="MuffinNumber" value="0" >
-    to become
-    <input type="text" name="MuffinContents" value="" >
-    <br />  <input type="submit" name="Change" value="Change">
-  </p>
-</form>
-
-<form method="post" action="">
-  <p>Or tag this page
-    <input type="number" name="MuffinNumber" value="0" >
-    to become included in the collection
-    <input type="number" name="CollectorNumber" value="0" >
-    <br />  <input type="submit" name="Tag" value="Tag It">
-  </p>
-</form>
 
 
-<p> Otherwise, choose from one of these pages:</p>
+<!--
+-comment-
+            <form method="post" action="">
+              <p>Or change page
+                <input type="number" name="MuffinNumber" value="0" >
+                to become
+                <input type="text" name="MuffinContents" value="" >
+                <br />  <input type="submit" name="Change" value="Change">
+              </p>
+            </form>
 
-<ul>
-  <% @myMuffins.each_with_index {|defReqNum, index|
-    defReq = @myPosts[defReqNum]
-    who = defReq.ip
-    who = "Poor Alistair locked in his dungeon" if defReq.ip == "86.193.109.86"
-    who = "Poor Alistair locked in his dungeon" if defReq.ip == "::1"
-  %>
+            <form method="post" action="">
+              <p>Or tag this page
+                <input type="number" name="MuffinNumber" value="0" >
+                to become included in the collection
+                <input type="number" name="CollectorNumber" value="0" >
+                <br />  <input type="submit" name="Tag" value="Tag It">
+              </p>
+            </form>
+-eComment-
+-->
+aaa
+<!--
+-comment-
+            <p> Otherwise, choose from one of these pages:</p>
 
-  <li> <a href=<%=index%> > Muffin <%=index%> </a>, submitted from <%= who %>
-  </li>
-  <% }  %>
-</ul>
+            <ul>
+              <% @myMuffins.each_with_index {|defReqNum, index|
+                defReq = @myPosts[defReqNum]
+                who = defReq.ip
+                who = "Poor Alistair locked in his dungeon" if defReq.ip == "86.193.109.86"
+                who = "Poor Alistair locked in his dungeon" if defReq.ip == "::1"
+              %>
 
-<p> Or, for the hard core, check the actual requests:</p>
+              <li> <a href=<%=index%> > Muffin <%=index%> </a>, submitted from <%= who %>
+              </li>
+              <% }  %>
+            </ul>
 
-<ul>
-  <% @myPosts.each_with_index {|defReq, index|
-    who = defReq.ip
-    who = "Poor Alistair locked in his dungeon" if defReq.ip == "86.193.109.86"
-    who = "Poor Alistair locked in his dungeon" if defReq.ip == "::1"
-    who = "Dr. Black in his speeding Valencia-mobile" if defReq.ip == "179.111.110.123"
-  %>
+            <p> Or, for the hard core, check the actual requests:</p>
 
-  <li> Muffin <%= defReq.env["muffinNumber"] %>, from input <%= defReq.params %>
-  </li>
-  <% }  %>
-</ul>
+            <ul>
+              <% @myPosts.each_with_index {|defReq, index|
+                who = defReq.ip
+                who = "Poor Alistair locked in his dungeon" if defReq.ip == "86.193.109.86"
+                who = "Poor Alistair locked in his dungeon" if defReq.ip == "::1"
+                who = "Dr. Black in his speeding Valencia-mobile" if defReq.ip == "179.111.110.123"
+              %>
+
+              <li> Muffin <%= defReq.env["muffinNumber"] %>, from input <%= defReq.params %>
+              </li>
+              <% }  %>
+            </ul>
+-eComment-
+-->
 
 
 <hr />
