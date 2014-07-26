@@ -11,7 +11,7 @@
 
 <hr />
 
-Welcome to Muffinland. Nothing with the name <%= show[:requested_name]%>.
+Welcome to Muffinland. Nothing with the name <%= reveal[:requested_name]%>.
 
 
 
@@ -22,12 +22,12 @@ Welcome to Muffinland. Nothing with the name <%= show[:requested_name]%>.
 </form>
 
 The Muffins:
-<% show[:dangerously_all_muffins].each_with_index { |value, index | %>
+<% reveal[:dangerously_all_muffins].each_with_index { |value, index | %>
     <p> <a href="<%= index %>">Muffin <%= index %> </a> is <%= value %> </p>
 <% } %>
 
 The Posts:
-<% show[:dangerously_all_posts].each_with_index { |value, index | %>
+<% reveal[:dangerously_all_posts].each_with_index { |value, index | %>
     <p> request:<%= index %> was <%= value %> </p>
 <% } %>
 

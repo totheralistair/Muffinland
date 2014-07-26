@@ -83,7 +83,7 @@ def show_404_on_EmptyDB
 end
 
 def show_404_basic( request, muffin_name )
-  show = {
+  reveal = {
       :requested_name => muffin_name,
       :dangerously_all_muffins =>
           @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
@@ -94,7 +94,7 @@ def show_404_basic( request, muffin_name )
 end
 
 def show_muffin_numbered( muffin_number )
-  show = {
+  reveal = {
       :muffin_number => muffin_number,
       :muffin_body => @theBaker.raw_number( muffin_number ),
       :dangerously_all_muffins =>
