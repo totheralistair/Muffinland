@@ -3,6 +3,7 @@
 # some changes:
 # 2014-07-24 18:25 ending v0.010; working. starting v0.011, all about to become broken
 # 2014-07-26 tagging hacked in; starting object model. big changes ahead.
+# 2014-07-26 taggin taken out, domain model put in.
 
 require 'rack'
 require 'erb'
@@ -39,6 +40,7 @@ class Muffinland
 
   def call(env) #this is the Rack Request chain that kicks everything off
     @theHistorian.add_request( request  = Rack::Request.new(env) )
+    @log.info("Just received request:" + request.env.inspect)
 
     case
       when request.get? then handle_get(request)
@@ -51,61 +53,59 @@ class Muffinland
 end
 
 #===== This utility belongs here =====
-def emit_response_using_known_viewFolder( templateJustFn, binding)
+def respond( templateJustFn, binding)
   emit_response_using_template( @viewsFolder + templateJustFn, binding )
 end
 
 #===== GETs =====
 def handle_get( request )
-  muffin_name = @theHistorian.requested_name_from( request )
-  muffin_number = muffin_name.to_i                #TODO. NEEDS TO MOVE. Historian? or where?
-  itsanumber = (muffin_name == muffin_number.to_s)
+
+  muffin_name, muffin_number = @theHistorian.requested_nameAndNumber_from( request )
 
   case
     when @theHistorian.no_history_to_report
-      emit_response_using_known_viewFolder("404_on_EmptyDB.erb", binding( ) )
-    when itsanumber && @theBaker.isa_registered_muffin( muffin_number)
-      show_muffin_numbered( muffin_number, request )
+      respond("404_on_EmptyDB.erb", binding( ) )
+    when @theBaker.isa_registered_muffin( muffin_number)
+      show_muffin_numbered( muffin_number )
     else
-      emit_response_using_known_viewFolder("404.erb", binding())
+      respond("404.erb", binding())
   end
+
 end
 
 def show_muffin_numbered( muffin_number )
   show = {
-    :use_muffin_number => muffin_number,
-    :use_muffin_body => @theBaker.raw_of_muffin_numbered( muffin_number )
+    :muffin_number => muffin_number,
+    :muffin_body => @theBaker.raw_number( muffin_number )
   }
-
-  emit_response_using_known_viewFolder("GET_named_page.erb", binding())
+  respond("GET_named_page.erb", binding())
 end
 
 
 #===================================================
 def handle_post( request ) # expect Rack::Request, emit Rack::Response
-#  handle_add_new_muffin(request)
-  path = request.path
   params = request.params
-  @log.info( "Received params = #{params}" )
-
-  case
+  case   # note dangerous: button names are in the Requests as commands!
     when params.has_key?("Go")
       handle_add_new_muffin(request)
+=begin
     when params.has_key?("Change")
       handle_change_muffin(request)
     when params.has_key?("Tag")
       handle_tag_muffin(request)
+=end
     else
       print "DOIN NUTHNG"
   end
 end
 
 def handle_add_new_muffin( request ) # expect Rack::Request, emit Rack::Response
-  @log.info("Received post request with details:" + request.env.inspect)
   muffin_number = @theBaker.add_new_muffin(request)
+  @log.info("Added post:" + request.env.inspect)
   show_muffin_numbered( muffin_number )
 end
 
+=begin
 def handle_change_muffin( request ) # expect Rack::Request, emit Rack::Response
   @log.info("Received change request with details:" + request.env.inspect)
   muffin_number = change_muffin( request )
@@ -150,10 +150,11 @@ def collectors_of( muffin_number ) # return (possibly empty) array of collector 
     request.env.has_key?( "collectorNumber" )
   }
   tag_requests = collecting_requests.select{ | request |
-    muffin_number(request) == muffin_number
+    muffin_number(request) == muffin_number #This doesn't belong here like this
   }
   tag_requests.map { | request | request.env["collectorNumber"].to_i }
 end
+=end
 
 
 #===================
@@ -161,11 +162,11 @@ class Muffin
 
   def initialize( number, defining_request)
     @myNumber = number
-    @myRawContents = defining_request.params["MuffinContents"]
+    @myRaw = defining_request.params["MuffinContents"]
   end
 
-  def raw_contents
-    @myRawContents
+  def raw
+    @myRaw
   end
 end
 
@@ -176,20 +177,16 @@ class Historian # knows the history of what has happened, all Posts
     @thePosts = Array.new
   end
 
-  def no_history_to_report
-    @thePosts.size == 0
-  end
-
+  def no_history_to_report;  @thePosts.size == 0; end
 
   def add_request( request )
-    case
-      when request.post? || request.path=="/post"
-        @thePosts << request
-    end
+    @thePosts << request
   end
 
-  def requested_name_from( request )
+  def requested_nameAndNumber_from( request )
     muffin_name = request.path[1..request.path.size]
+    muffin_number = muffin_name.to_i
+    muffin_number = nil if (muffin_name != muffin_number.to_s)
   end
 
 end
@@ -206,18 +203,18 @@ class Baker # knows the whereabouts and handlings of muffins.
     (n.is_a? Integer) && ( n > -1 ) && ( n < @theMuffins.size )
   end
 
-  def raw_of_muffin_numbered( muffin_number )
-    @theMuffins[muffin_number].raw_contents
+  def raw_number( muffin_number )
+    @theMuffins[muffin_number].raw
   end
 
-  def add_new_muffin( request ) # expect Rack::Request, return muffin number
+  def add_new_muffin( request ) # expect Rack::Request, modify the Request, return muffin number
     muffin_number = @theMuffins.size
-    request.env["muffinNumber"] = muffin_number.to_s  # explicitly add muffinNumber to the defining request
+
+    request.env["muffinNumber"] = muffin_number.to_s  #  modify the defining request!!
     @theMuffins << Muffin.new( muffin_number, request )
+
     return muffin_number
   end
-
-
 
 end
 
