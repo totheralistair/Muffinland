@@ -60,23 +60,38 @@ def handle_get( request )
 
   case
     when @theHistorian.no_history_to_report
-      respond("404_on_EmptyDB.erb", binding( ) )
+      show_404_on_EmptyDB
     when @theBaker.isa_registered_muffin( muffin_number)
       show_muffin_numbered( muffin_number )
     else
-      respond("404.erb", binding())
+      show_404_basic( request, muffin_name )
   end
 
 end
 
+def show_404_on_EmptyDB
+  respond("404_on_EmptyDB.erb", binding( ) )
+end
+
+def show_404_basic( request, muffin_name )
+  show = {
+      :requested_name => muffin_name,
+      :dangerously_all_muffins =>
+          @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
+      :dangerously_all_posts =>
+          @theHistorian.dangerously_all_posts.map{|req|req.params["MuffinContents"]}
+  }
+  respond("404.erb", binding( ) )
+end
+
 def show_muffin_numbered( muffin_number )
   show = {
-    :muffin_number => muffin_number,
-    :muffin_body => @theBaker.raw_number( muffin_number ),
-    :dangerously_all_muffins =>
-        @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
-    :dangerously_all_posts =>
-        @theHistorian.dangerously_all_posts.map{|req|req.params["MuffinContents"]}
+      :muffin_number => muffin_number,
+      :muffin_body => @theBaker.raw_number( muffin_number ),
+      :dangerously_all_muffins =>
+          @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
+      :dangerously_all_posts =>
+          @theHistorian.dangerously_all_posts.map{|req|req.params["MuffinContents"]}
   }
   respond("GET_named_page.erb", binding())
 end

@@ -11,7 +11,7 @@
 
 <hr />
 
-Welcome to Muffinland. Nothing with that name (yet).
+Welcome to Muffinland. Nothing with the name <%= show[:requested_name]%>.
 
 
 
@@ -20,6 +20,18 @@ Welcome to Muffinland. Nothing with that name (yet).
     <input type="text" name="MuffinContents" value="" >
     <input type="submit" name="Go" value="Go"></p>
 </form>
+
+The Muffins:
+<% show[:dangerously_all_muffins].each_with_index { |value, index | %>
+    <p> <a href="<%= index %>">Muffin <%= index %> </a> is <%= value %> </p>
+<% } %>
+
+The Posts:
+<% show[:dangerously_all_posts].each_with_index { |value, index | %>
+    <p> request:<%= index %> was <%= value %> </p>
+<% } %>
+
+
 
 </body>
 </html>

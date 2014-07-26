@@ -22,7 +22,7 @@
 
 The Muffins:
 <% show[:dangerously_all_muffins].each_with_index { |value, index | %>
-    <p> muffin:<%= index %> is <%= value %> </p>
+    <p> <a href="<%= index %>">Muffin <%= index %> </a> is <%= value %> </p>
 <% } %>
 
 The Posts:
