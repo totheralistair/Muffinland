@@ -2,6 +2,7 @@
 # Alistair Cockburn and a couple of really nice friends
 # some changes:
 # 2014-07-24 18:25 ending v0.010; working. starting v0.011, all about to become broken
+# 2014-07-26 tagging hacked in; starting object model. big changes ahead.
 
 require 'rack'
 require 'erb'
@@ -151,3 +152,12 @@ def collectors_of( muffin_number ) # return (possibly empty) array of collector 
 end
 
 
+#===================
+class Muffin
+  def initialize( number, defining_request)
+    @myNumber = number
+  end
+
+  def number; @myNumber; end
+
+end
