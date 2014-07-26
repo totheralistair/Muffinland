@@ -39,17 +39,13 @@ class Muffinland
   end
 
   def call(env) #this is the Rack Request chain that kicks everything off
-    @theHistorian.add_request( request  = Rack::Request.new(env) )
-    @log.info("Just received request:" + request.env.inspect)
-
+    request  = Rack::Request.new(env)
     case
       when request.get? then handle_get(request)
       when request.post? then handle_post(request)
       when request.path=="/post" then handle_post(request)
     end
-
   end
-
 end
 
 #===== This utility belongs here =====
@@ -76,7 +72,11 @@ end
 def show_muffin_numbered( muffin_number )
   show = {
     :muffin_number => muffin_number,
-    :muffin_body => @theBaker.raw_number( muffin_number )
+    :muffin_body => @theBaker.raw_number( muffin_number ),
+    :dangerously_all_muffins =>
+        @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
+    :dangerously_all_posts =>
+        @theHistorian.dangerously_all_posts.map{|req|req.params["MuffinContents"]}
   }
   respond("GET_named_page.erb", binding())
 end
@@ -84,8 +84,10 @@ end
 
 #===================================================
 def handle_post( request ) # expect Rack::Request, emit Rack::Response
+  @theHistorian.add_request( request )
+  @log.info("Just received POST:" + request.env.inspect)
   params = request.params
-  case   # note dangerous: button names are in the Requests as commands!
+  case   # dangerous: button names are in the Requests as commands!
     when params.has_key?("Go")
       handle_add_new_muffin(request)
 =begin
@@ -179,6 +181,9 @@ class Historian # knows the history of what has happened, all Posts
 
   def no_history_to_report;  @thePosts.size == 0; end
 
+  def dangerously_all_posts; @thePosts; end #yep, dangerous. remove eventually
+
+
   def add_request( request )
     @thePosts << request
   end
@@ -187,6 +192,7 @@ class Historian # knows the history of what has happened, all Posts
     muffin_name = request.path[1..request.path.size]
     muffin_number = muffin_name.to_i
     muffin_number = nil if (muffin_name != muffin_number.to_s)
+    return muffin_name, muffin_number
   end
 
 end
@@ -198,6 +204,9 @@ class Baker # knows the whereabouts and handlings of muffins.
   def initialize
     @theMuffins = Array.new
   end
+
+  def dangerously_all_muffins; @theMuffins; end #yep, dangerous. remove eventually
+
 
   def isa_registered_muffin( n )
     (n.is_a? Integer) && ( n > -1 ) && ( n < @theMuffins.size )

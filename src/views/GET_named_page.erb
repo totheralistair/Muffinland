@@ -20,6 +20,16 @@
   </p>
 </form>
 
+The Muffins:
+<% show[:dangerously_all_muffins].each_with_index { |value, index | %>
+    <p> muffin:<%= index %> is <%= value %> </p>
+<% } %>
+
+The Posts:
+<% show[:dangerously_all_posts].each_with_index { |value, index | %>
+    <p> request:<%= index %> was <%= value %> </p>
+<% } %>
+
 
 </body>
 </html>
