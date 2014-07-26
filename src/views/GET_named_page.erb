@@ -3,131 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <title>
-    Muffinland page
-
-<!--
--comment-
-        <%= request_number = @myMuffins[muffin_number]
-            request = @myPosts[request_number]
-            muffinNumberInRequest = request.env["muffinNumber"]
-            muffin_number
-        %>:
--eComment-
--->
-
+    Muffinland
   </title>
 </head>
 <body>
 
-<p>-----
-  muffin <%= muffin_number %>,
+<p> muffin <%= show[:use_muffin_number] %> </p>
 
-<!--
--comment-
-          stored in request <%= request_number %>
-          (claiming to be muffin <%= muffinNumberInRequest %>):</p>
--eComment
--->
-
-<%=
-    muffin_contents = request.params["MuffinContents"]
-    muffin_contents
-%>
-
-<p>----- end of page <%= muffin_number %> -----</p>
-
-
-<!--
--comment
-            <p> and is tagged to belong to these collections (if any):</p>
-            <%= collectors_of(muffin_number)%>
--eComment
--->
-
+<%= show[:use_muffin_body] %>
 
 
 <form method="post" action="">
-  <p>Go ahead and add page <%= @myMuffins.size %>:
+  <p>Go ahead and add page
     <input type="text" name="MuffinContents" value="" >
     <br />  <input type="submit" name="Go" value="Go">
   </p>
 </form>
-
-
-
-<!--
--comment-
-            <form method="post" action="">
-              <p>Or change page
-                <input type="number" name="MuffinNumber" value="0" >
-                to become
-                <input type="text" name="MuffinContents" value="" >
-                <br />  <input type="submit" name="Change" value="Change">
-              </p>
-            </form>
-
-            <form method="post" action="">
-              <p>Or tag this page
-                <input type="number" name="MuffinNumber" value="0" >
-                to become included in the collection
-                <input type="number" name="CollectorNumber" value="0" >
-                <br />  <input type="submit" name="Tag" value="Tag It">
-              </p>
-            </form>
--eComment-
--->
-aaa
-<!--
--comment-
-            <p> Otherwise, choose from one of these pages:</p>
-
-            <ul>
-              <% @myMuffins.each_with_index {|defReqNum, index|
-                defReq = @myPosts[defReqNum]
-                who = defReq.ip
-                who = "Poor Alistair locked in his dungeon" if defReq.ip == "86.193.109.86"
-                who = "Poor Alistair locked in his dungeon" if defReq.ip == "::1"
-              %>
-
-              <li> <a href=<%=index%> > Muffin <%=index%> </a>, submitted from <%= who %>
-              </li>
-              <% }  %>
-            </ul>
-
-            <p> Or, for the hard core, check the actual requests:</p>
-
-            <ul>
-              <% @myPosts.each_with_index {|defReq, index|
-                who = defReq.ip
-                who = "Poor Alistair locked in his dungeon" if defReq.ip == "86.193.109.86"
-                who = "Poor Alistair locked in his dungeon" if defReq.ip == "::1"
-                who = "Dr. Black in his speeding Valencia-mobile" if defReq.ip == "179.111.110.123"
-              %>
-
-              <li> Muffin <%= defReq.env["muffinNumber"] %>, from input <%= defReq.params %>
-              </li>
-              <% }  %>
-            </ul>
--eComment-
--->
-
-
-<hr />
-
-<pre>
-<p> Tech notes:</p>
-<p> Path sent in was "<%= request.path %>" </p>
-<p> Params were <%= request.params %></p>
-</pre>
-
-<p> You did good. <br />
-  Yes, I know that's bad English.
-</p>
-<img src="http://alistair.cockburn.us/get/1830">
-
-
-
-
 
 
 </body>

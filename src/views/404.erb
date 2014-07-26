@@ -16,29 +16,10 @@ Welcome to Muffinland. Nothing with that name (yet).
 
 
 <form method="post" action="">
-  <p>Add muffin <%= @next_available_muffin_number %>:
+  <p>Add muffin:
     <input type="text" name="MuffinContents" value="" >
     <input type="submit" name="Go" value="Go"></p>
 </form>
-
-<p> Try choosing from one of these pages:</p>
-
-<ul>
-  <% @myPosts.each_with_index {|muffin, index|   %>
-      <li> <a href=<%=index%> > page <%=index%> </a>, submitted from <%= muffin.ip %>
-      </li>
-  <% }  %>
-</ul>
-
-
-
-<hr />
-
-
-<p> Tech notes:</p>
-<p> Path sent in was "<%= request.path %>" </p>
-<p> Params were <%= request.params %></p>
-
 
 </body>
 </html>
