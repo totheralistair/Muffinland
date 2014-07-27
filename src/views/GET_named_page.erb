@@ -8,10 +8,21 @@
 </head>
 <body>
 
-<p> Muffin <%= reveal[:muffin_number] %> is: </p>
+<p> Page <%= reveal[:muffin_number] %> is:
+  <br />
 
-<%= reveal[:muffin_body] %>
+    <%= reveal[:muffin_body] %>
 
+    <br />
+        <% if reveal[:tags].size > 0 then %>
+        tagged to <% reveal[:tags].each {|tag|  %>
+            <a href="<%= tag %>">Page <%= tag %> </a>,
+      <% } %>
+    <% end %>
+</p>
+
+
+<hr />
 
 <form method="post" action="">
   <p>Go ahead and add another:
@@ -21,20 +32,32 @@
 </form>
 
 <form method="post" action="">
-  <p>Or change muffin number
-    <input type="number" name="MuffinNumber" min="0" max="20000">
+  <p>Or change page number
+    <input type="number" name="MuffinNumber" min="0" max="20000" value="-1"    >
     to contain:
     <input type="text" name="MuffinContents" value="" >
     <br />  <input type="submit" name="Change" value="Change">
   </p>
 </form>
 
+<form method="post" action="">
+  <p>Or tag page number
+    <input type="number" name="MuffinNumber" min="0" max="20000" value="-1"    >
+    to be associated with this page:
+    <input type="number" name="CollectorNumber" min="0" max="20000" value="-1"    >
+    <br />  <input type="submit" name="Tag" value="Tag">
+  </p>
+</form>
+
+<hr />
+
 The Muffins:
 <% reveal[:dangerously_all_muffins].each_with_index { |value, index | %>
-    <p> <a href="<%= index %>">Muffin <%= index %> </a> is <%= value %> </p>
+    <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value %> </p>
 <% } %>
 
-The Posts:
+<hr />
+The Requests as they arrived:
 <% reveal[:dangerously_all_posts].each_with_index { |value, index | %>
     <p> request:<%= index %> was <%= value %> </p>
 <% } %>

@@ -3,12 +3,15 @@
 # some changes:
 # 2014-07-24 18:25 ending v0.010; working. starting v0.011, all about to become broken
 # 2014-07-26 tagging hacked in; starting object model. big changes ahead.
-# 2014-07-26 taggin taken out, domain model put in.
+# 2014-07-26 tagging taken out, domain model put in.
+# 2014-07-27 basic tagging put back in. wanting a "request-parser" thing
+# ideas: email, DTO test,
 
 require 'rack'
 require 'erb'
 require 'erubis'
 require 'logger'
+require 'set'
 
 #===== These i/o utilities should be in a shared place one day =====
 def emit_response_using_template( templateFullFn, binding)
@@ -22,20 +25,19 @@ def page_from_template( templateFullFn, binding )
   pageTemplate.result(binding)
 end
 
-def requested_nameAndNumber_from_path( request )
-  name = request.path[1..request.path.size]
-  number = name.to_i
-  number = nil if (name != number.to_s)
-  return name, number
+def number_or_nil( s )
+  n = s.to_i
+  n = nil if (n.to_s != s)
+  return n
 end
 
-
-
+def zapout( str )
+  print "\n #{str} \n"
+end
 
 #=====
 class Muffinland
-  # Muffinland know global policies and environmental
-  # details, not histories and private things.
+  # Muffinland know global policies and environment, not histories and private things.
 
   def initialize(viewsFolder)
     @theHistorian = Historian.new # knows the history of requests
@@ -65,7 +67,14 @@ end
 #===== GETs =====
 def handle_get( request )
 
-  muffin_name, muffin_number = requested_nameAndNumber_from_path( request )
+  muffin_name, muffin_number = @theBaker.nameAndNumber_from_path( request )
+  zapout "muffin name:#{muffin_name}, muffin_number:#{muffin_number}"
+
+  if muffin_name==""
+    muffin_name = "0"
+    muffin_number = 0
+  end
+  zapout "muffin name:#{muffin_name}, muffin_number:#{muffin_number}"
 
   case
     when @theHistorian.no_history_to_report
@@ -96,11 +105,12 @@ end
 def show_muffin_numbered( muffin_number )
   reveal = {
       :muffin_number => muffin_number,
-      :muffin_body => @theBaker.raw_number( muffin_number ),
+      :muffin_body => @theBaker.raw_contents( muffin_number ),
+      :tags => @theBaker.muffin(muffin_number).dangerously_all_tags,
       :dangerously_all_muffins =>
           @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
       :dangerously_all_posts =>
-          @theHistorian.dangerously_all_posts.map{|req|req.params["MuffinContents"]}
+          @theHistorian.dangerously_all_posts.map{|req|req.inspect}
   }
   respond("GET_named_page.erb", binding())
 end
@@ -131,53 +141,18 @@ def handle_add_new_muffin( request ) # expect Rack::Request, emit Rack::Response
 end
 
 def handle_change_muffin( request ) # expect Rack::Request, emit Rack::Response
-  muffin_number = request.params["MuffinNumber"].to_i
-
-  case
-    when @theBaker.isa_registered_muffin( muffin_number)
-      @theBaker.change_muffin_per_request( muffin_number, request )
-      show_muffin_numbered( muffin_number )
-    else
-      show_404_basic( request, muffin_number.to_s )
-  end
+  muffin_name, muffin_number = @theBaker.nameAndNumber_from_params( request )
+  @theBaker.change_muffin_per_request( muffin_number, request ) ?
+      show_muffin_numbered( muffin_number ) :
+      show_404_basic( request, muffin_name )
 end
 
-=begin
 def handle_tag_muffin( request ) # expect Rack::Request, emit Rack::Response
-  muffin_number = tag_muffin( request )
-  @log.info("Received tag request with details:" + request.env.inspect)
-  show_muffin_numbered( muffin_number )
+  muffin_name, muffin_number = @theBaker.nameAndNumber_from_params( request )
+  @theBaker.tag_muffin_per_request( muffin_number, request ) ?
+      show_muffin_numbered( muffin_number ) :
+      show_404_basic( request, muffin_name )
 end
-
-def tag_muffin( request ) # expect Rack::Request, return muffin number
-  muffin_number = request.params["MuffinNumber"].to_i
-  collector_number = request.params["CollectorNumber"].to_i
-  request.env["muffinNumber"] = muffin_number.to_s  # explicitly add muffinNumber to the defining request
-  request.env["collectorNumber"] = collector_number.to_s  # THIS IS SILLY. STOP IT.
-  @myMuffins[muffin_number] = @myPosts.size  # @myMuffins indicates which @myPost entry is its defn
-  @myPosts.push(request)          # @myPosts holds the actual definition
-  return muffin_number
-end
-
-def muffin_number( request )
-  request.env["muffinNumber"].to_i
-end
-
-def request_is_tagged_to_collector( request, collector_number )
-  request.env.has_key?( "collectorNumber" ) &&
-      request.env["collectorNumber"].to_i == collector_number
-end
-
-def collectors_of( muffin_number ) # return (possibly empty) array of collector numbers
-  collecting_requests = @myPosts.select{ | request |
-    request.env.has_key?( "collectorNumber" )
-  }
-  tag_requests = collecting_requests.select{ | request |
-    muffin_number(request) == muffin_number #This doesn't belong here like this
-  }
-  tag_requests.map { | request | request.env["collectorNumber"].to_i }
-end
-=end
 
 
 #===================
@@ -186,18 +161,20 @@ class Muffin
   def initialize( number, defining_request)
     @myNumber = number
     @myRaw = defining_request.params["MuffinContents"]
-
-    @log = Logger.new(STDOUT)
-    @log.level = Logger::INFO
+    @myTags = Set.new
+        @log = Logger.new(STDOUT)
+        @log.level = Logger::INFO
   end
 
-  def raw
-    @myRaw
-  end
+  def raw; @myRaw; end
 
   def new_contents_from_request( request )
     @myRaw = request.params["MuffinContents"]
   end
+
+  def add_tag( n ); @myTags << n; end
+
+  def dangerously_all_tags; @myTags; end
 
 end
 
@@ -206,9 +183,8 @@ class Historian # knows the history of what has happened, all Posts
 
   def initialize
     @thePosts = Array.new
-
-    @log = Logger.new(STDOUT)
-    @log.level = Logger::INFO
+        @log = Logger.new(STDOUT)
+        @log.level = Logger::INFO
   end
 
   def no_history_to_report;  @thePosts.size == 0; end
@@ -228,20 +204,31 @@ class Baker # knows the whereabouts and handlings of muffins.
 
   def initialize
     @theMuffins = Array.new
-
-    @log = Logger.new(STDOUT)
-    @log.level = Logger::INFO
+        @log = Logger.new(STDOUT)
+        @log.level = Logger::INFO
   end
 
   def dangerously_all_muffins; @theMuffins; end #yep, dangerous. remove eventually
 
+  def muffin(n); @theMuffins[n]; end
 
   def isa_registered_muffin( n )
-    (n.is_a? Integer) && ( n > -1 ) && ( n < @theMuffins.size )
+    result = (n.is_a? Integer) && ( n > -1 ) && ( n < @theMuffins.size )
   end
 
-  def raw_number( muffin_number )
+  def raw_contents( muffin_number )
     @theMuffins[muffin_number].raw
+  end
+
+  def nameAndNumber_from_path( request )  # not sure this belongs here
+    name = request.path[1..request.path.size]
+    return name, number_or_nil(name)
+  end
+
+  def nameAndNumber_from_params( request ) # not sure this belongs here
+    name = request.params["MuffinNumber"]
+    number = number_or_nil(name)
+    return name, number
   end
 
   def add_new_muffin( request ) # expect Rack::Request, modify the Request!, return muffin number
@@ -250,21 +237,42 @@ class Baker # knows the whereabouts and handlings of muffins.
     request.env["muffinNumber"] = muffin_number.to_s  #  modify the defining request!!
     @theMuffins << Muffin.new( muffin_number, request )
 
-    @log.info("Added post:" + request.env.inspect)
+        @log.info("Added post:" + request.env.inspect)
     return muffin_number
   end
 
-  def change_muffin_per_request( muffin_number, request ) # expect Rack::Request, modify the Request! return muffin number
+  def change_muffin_per_request( muffin_number, request ) # modify the Request in place; return nil if bad muffin number
     return nil if !isa_registered_muffin( muffin_number)
 
     request.env["muffinNumber"] = muffin_number.to_s  #  modify the defining request!!
     @theMuffins[muffin_number].new_contents_from_request( request )
 
-    @log.info("Changed muffin:" + request.env.inspect)
+        @log.info("Changed muffin:" + request.env.inspect)
     return muffin_number
   end
 
+  def tag_muffin_per_request( n_ignored, request ) #really want both numbers coming in here.but ok
+    zapout "IN TAG"
+    muffin_name = request.params["MuffinNumber"]
+    muffin_number = number_or_nil( muffin_name )
+    zapout "M name:#{muffin_name}, number:#{muffin_number}"
+    return nil if !isa_registered_muffin( muffin_number ) #FAIL! hopefully UI will stop this
 
+    collector_name = request.params["CollectorNumber"]
+    collector_number = number_or_nil( collector_name  )
+    zapout "C name:#{collector_name}, number:#{collector_number}"
+    return if !isa_registered_muffin( collector_number ) #FAIL! hopefully UI will stop this
+
+    zapout "still alive"
+    request.env["muffinNumber"] = muffin_number.to_s  # explicitly add muffinNumber to the defining request
+    request.env["collectorNumber"] = collector_number.to_s  # THIS IS SILLY. STOP IT.
+
+    @theMuffins[muffin_number].add_tag(collector_number)
+
+        @log.info("Received tag request with details:" + request.env.inspect)
+    zapout "RETURNING MUFFIN NUMBER:#{muffin_number}"
+    return muffin_number
+  end
 
 end
 
