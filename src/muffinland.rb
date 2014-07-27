@@ -25,11 +25,18 @@ def page_from_template( templateFullFn, binding )
   pageTemplate.result(binding)
 end
 
+def number_or_nil(string)
+    Integer(string)
+  rescue ArgumentError
+    nil
+end
+=begin
 def number_or_nil( s )
   n = s.to_i
   n = nil if (n.to_s != s)
   return n
 end
+=end
 
 def zapout( str )
   print "\n #{str} \n"
@@ -252,25 +259,20 @@ class Baker # knows the whereabouts and handlings of muffins.
   end
 
   def tag_muffin_per_request( n_ignored, request ) #really want both numbers coming in here.but ok
-    zapout "IN TAG"
     muffin_name = request.params["MuffinNumber"]
     muffin_number = number_or_nil( muffin_name )
-    zapout "M name:#{muffin_name}, number:#{muffin_number}"
     return nil if !isa_registered_muffin( muffin_number ) #FAIL! hopefully UI will stop this
 
     collector_name = request.params["CollectorNumber"]
     collector_number = number_or_nil( collector_name  )
-    zapout "C name:#{collector_name}, number:#{collector_number}"
     return if !isa_registered_muffin( collector_number ) #FAIL! hopefully UI will stop this
 
-    zapout "still alive"
     request.env["muffinNumber"] = muffin_number.to_s  # explicitly add muffinNumber to the defining request
     request.env["collectorNumber"] = collector_number.to_s  # THIS IS SILLY. STOP IT.
 
     @theMuffins[muffin_number].add_tag(collector_number)
 
         @log.info("Received tag request with details:" + request.env.inspect)
-    zapout "RETURNING MUFFIN NUMBER:#{muffin_number}"
     return muffin_number
   end
 
