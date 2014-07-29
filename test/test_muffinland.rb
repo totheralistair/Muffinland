@@ -23,13 +23,13 @@ class TestRequests < Test::Unit::TestCase
     path, params = '/', '{}'
     next_available_muffin_number = 0
     @myPosts = Array.new
-    exp = page_from_template( viewsFolder + "404_on_EmptyDB.erb", binding() )
+    exp = page_from_template( viewsFolder + "EmptyDB.erb", binding() )
     got = run_without_server( app, "GET", '/').body
     got.should == exp
 
     path, params = '/aaa', '{}'
     next_available_muffin_number = 0
-    exp = page_from_template( viewsFolder + "404_on_EmptyDB.erb", binding() )
+    exp = page_from_template( viewsFolder + "EmptyDB.erb", binding() )
     got = run_without_server( app, "GET", '/aaa').body
     got.should == exp
   end

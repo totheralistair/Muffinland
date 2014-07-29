@@ -37,19 +37,15 @@ class Muffinland
     @theBaker = Baker.new         # knows the muffins
 
     @viewsFolder = viewsFolder    # I could hope this goes away one day, ugh.
-
     @log = Logger.new(STDOUT)
     @log.level = Logger::INFO
   end
 
   def call(env) #this is the Rack Request chain that kicks everything off
-    rreq  = Rack::Request.new(env)
-    request = MRackRequest.new( rreq )
-
+    request = MRackRequest.new( Rack::Request.new(env) )
     case
       when request.get? then handle_get(request)
       when request.post? then handle_post(request)
-#      when request.path=="/post" then handle_post(request)
     end
   end
 end
@@ -63,10 +59,8 @@ end
 def handle_get( request )
 
   muffin_name, muffin_number = @theBaker.nameAndNumber_from_path( request )
-  if muffin_name==""
-    muffin_name = "0"
-    muffin_number = 0
-  end
+
+  (muffin_name,muffin_number = "0",0) if muffin_name==""
 
   case
     when @theHistorian.no_history_to_report
@@ -90,8 +84,7 @@ def show_404_basic( request, muffin_name )
           @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
       :dangerously_all_posts =>
           @theHistorian.dangerously_all_posts.map{|req|
-            req.requested_muffin_number_str # req.params["MuffinContents"]
-          }
+            req.requested_muffin_number_str }
   }
   respond("404.erb", binding( ) )
 end
@@ -117,31 +110,27 @@ def handle_post( request ) # expect Rack::Request, emit Rack::Response
   @theHistorian.add_request( request )
 
   case   # dangerous: button names are in the Requests as commands!
-    when request.is_Go_command?
-      handle_add_new_muffin(request)
-    when request.is_Change_command?
-      handle_change_muffin(request)
-    when request.is_Tag_command?
-      handle_tag_muffin(request)
-    else
-      print "DOIN NUTHNG"
+    when request.is_Go_command? then      handle_add_new_muffin(request)
+    when request.is_Change_command? then  handle_change_muffin(request)
+    when request.is_Tag_command? then     handle_tag_muffin(request)
+    else                                  print "DOIN NUTHNG"
   end
 
 end
 
-def handle_add_new_muffin( request ) # expect Rack::Request, emit Rack::Response
+def handle_add_new_muffin( request )
   muffin_number = @theBaker.add_new_muffin(request)
   show_muffin_numbered( muffin_number )
 end
 
-def handle_change_muffin( request ) # expect Rack::Request, emit Rack::Response
+def handle_change_muffin( request )
   muffin_name, muffin_number = @theBaker.nameAndNumber_from_params( request )
   @theBaker.change_muffin_per_request( muffin_number, request ) ?
       show_muffin_numbered( muffin_number ) :
       show_404_basic( request, muffin_name )
 end
 
-def handle_tag_muffin( request ) # expect Rack::Request, emit Rack::Response
+def handle_tag_muffin( request )
   muffin_name, muffin_number = @theBaker.nameAndNumber_from_params( request )
   @theBaker.tag_muffin_per_request( muffin_number, request ) ?
       show_muffin_numbered( muffin_number ) :
@@ -153,7 +142,6 @@ end
 class Muffin
 
   def initialize( number, request)
-#    mreq = MRackRequest.new(request) #REMOVE once Mrequest is done
     @myNumber = number
     new_contents_from_request( request )
     @myTags = Set.new
@@ -223,7 +211,7 @@ class Baker # knows the whereabouts and handlings of muffins.
     request.nameAndNumber_from_params
   end
 
-  def add_new_muffin( request ) # expect Rack::Request, modify the Request!, return muffin number
+  def add_new_muffin( request ) # modify the Request!, return muffin number
     muffin_number = @theMuffins.size
     request.add_muffin_number(muffin_number)  #  modify the defining request!!
     @theMuffins << Muffin.new( muffin_number, request )
@@ -233,10 +221,8 @@ class Baker # knows the whereabouts and handlings of muffins.
 
   def change_muffin_per_request( muffin_number, request ) # modify the Request in place; return nil if bad muffin number
     return nil if !isa_registered_muffin( muffin_number)
-
     request.add_muffin_number(muffin_number)  #  modify the defining request!!
     @theMuffins[muffin_number].new_contents_from_request( request )
-
         @log.info("Changed muffin:" + request.inspect)
     return muffin_number
   end

@@ -1,7 +1,3 @@
-# Mrequest is the set of classes that know what it is
-# that is coming into Muffinland as a request.
-# Could be a Rack::Request or a DTORequest for testing
-
 def number_or_nil(string)
   Integer(string)
 rescue ArgumentError
@@ -9,14 +5,21 @@ rescue ArgumentError
 end
 
 
+#==================================
+# Mrequest is the class hierarchy that know what
+# flavor of request is coming into Muffinland.
+# Could be a Rack::Request or a DTORequest for testing
 
 class Mrequest
 
+  #nothing implemented at this level yet.
 
 end
 
-#=============================
-# a Rack::Request as ML request
+
+#==================================
+# a Rack::Request wrapper
+
 class MRackRequest < Mrequest
   require 'rack'
   require 'rack/test'
@@ -31,7 +34,7 @@ class MRackRequest < Mrequest
   end
 
   def post?
-    @myMe.post?
+    @myMe.post? || @myMe.path=="/post"
   end
 
   def is_Go_command?
