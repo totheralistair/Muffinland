@@ -1,9 +1,5 @@
 # Welcome to Muffinland, the lazy CMS (or something)
 # Alistair Cockburn and a couple of really nice friends
-# some changes:
-# 2014-07-24 18:25 ending v0.010; working. starting v0.011, all about to become broken
-# 2014-07-26 tagging hacked in; starting object model. big changes ahead.
-# 2014-07-26 tagging taken out, domain model put in.
 # 2014-07-27 basic tagging put back in. wanting a "request-parser" thing
 # ideas: email, DTO test,
 
@@ -12,6 +8,9 @@ require 'erb'
 require 'erubis'
 require 'logger'
 require 'set'
+require_relative './mrequest.rb'
+
+
 
 #===== These i/o utilities should be in a shared place one day =====
 def emit_response_using_template( templateFullFn, binding)
@@ -21,22 +20,9 @@ def emit_response_using_template( templateFullFn, binding)
 end
 
 def page_from_template( templateFullFn, binding )
-  pageTemplate = Erubis::Eruby.new(File.open( templateFullFn, 'r').read)
-  pageTemplate.result(binding)
+    pageTemplate = Erubis::Eruby.new(File.open( templateFullFn, 'r').read)
+    pageTemplate.result(binding)
 end
-
-def number_or_nil(string)
-    Integer(string)
-  rescue ArgumentError
-    nil
-end
-=begin
-def number_or_nil( s )
-  n = s.to_i
-  n = nil if (n.to_s != s)
-  return n
-end
-=end
 
 def zapout( str )
   print "\n #{str} \n"
@@ -57,11 +43,13 @@ class Muffinland
   end
 
   def call(env) #this is the Rack Request chain that kicks everything off
-    request  = Rack::Request.new(env)
+    rreq  = Rack::Request.new(env)
+    request = MRackRequest.new( rreq )
+
     case
       when request.get? then handle_get(request)
       when request.post? then handle_post(request)
-      when request.path=="/post" then handle_post(request)
+#      when request.path=="/post" then handle_post(request)
     end
   end
 end
@@ -75,17 +63,14 @@ end
 def handle_get( request )
 
   muffin_name, muffin_number = @theBaker.nameAndNumber_from_path( request )
-  zapout "muffin name:#{muffin_name}, muffin_number:#{muffin_number}"
-
   if muffin_name==""
     muffin_name = "0"
     muffin_number = 0
   end
-  zapout "muffin name:#{muffin_name}, muffin_number:#{muffin_number}"
 
   case
     when @theHistorian.no_history_to_report
-      show_404_on_EmptyDB
+      show_EmptyDB
     when @theBaker.isa_registered_muffin( muffin_number)
       show_muffin_numbered( muffin_number )
     else
@@ -94,8 +79,8 @@ def handle_get( request )
 
 end
 
-def show_404_on_EmptyDB
-  respond("404_on_EmptyDB.erb", binding( ) )
+def show_EmptyDB
+  respond("EmptyDB.erb", binding( ) )
 end
 
 def show_404_basic( request, muffin_name )
@@ -104,7 +89,9 @@ def show_404_basic( request, muffin_name )
       :dangerously_all_muffins =>
           @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
       :dangerously_all_posts =>
-          @theHistorian.dangerously_all_posts.map{|req|req.params["MuffinContents"]}
+          @theHistorian.dangerously_all_posts.map{|req|
+            req.requested_muffin_number_str # req.params["MuffinContents"]
+          }
   }
   respond("404.erb", binding( ) )
 end
@@ -125,16 +112,16 @@ end
 
 #===================================================
 def handle_post( request ) # expect Rack::Request, emit Rack::Response
-  @log.info("Just received POST:" + request.env.inspect)
+  @log.info("Just received POST:" + request.inspect)
 
   @theHistorian.add_request( request )
 
   case   # dangerous: button names are in the Requests as commands!
-    when request.params.has_key?("Go")
+    when request.is_Go_command?
       handle_add_new_muffin(request)
-    when request.params.has_key?("Change")
+    when request.is_Change_command?
       handle_change_muffin(request)
-    when request.params.has_key?("Tag")
+    when request.is_Tag_command?
       handle_tag_muffin(request)
     else
       print "DOIN NUTHNG"
@@ -165,9 +152,10 @@ end
 #===================
 class Muffin
 
-  def initialize( number, defining_request)
+  def initialize( number, request)
+#    mreq = MRackRequest.new(request) #REMOVE once Mrequest is done
     @myNumber = number
-    @myRaw = defining_request.params["MuffinContents"]
+    new_contents_from_request( request )
     @myTags = Set.new
         @log = Logger.new(STDOUT)
         @log.level = Logger::INFO
@@ -176,7 +164,7 @@ class Muffin
   def raw; @myRaw; end
 
   def new_contents_from_request( request )
-    @myRaw = request.params["MuffinContents"]
+    @myRaw = request.incoming_muffin_contents
   end
 
   def add_tag( n ); @myTags << n; end
@@ -228,51 +216,47 @@ class Baker # knows the whereabouts and handlings of muffins.
   end
 
   def nameAndNumber_from_path( request )  # not sure this belongs here
-    name = request.path[1..request.path.size]
-    return name, number_or_nil(name)
+    request.nameAndNumber_from_path
   end
 
   def nameAndNumber_from_params( request ) # not sure this belongs here
-    name = request.params["MuffinNumber"]
-    number = number_or_nil(name)
-    return name, number
+    request.nameAndNumber_from_params
   end
 
   def add_new_muffin( request ) # expect Rack::Request, modify the Request!, return muffin number
     muffin_number = @theMuffins.size
-
-    request.env["muffinNumber"] = muffin_number.to_s  #  modify the defining request!!
+    request.add_muffin_number(muffin_number)  #  modify the defining request!!
     @theMuffins << Muffin.new( muffin_number, request )
-
-        @log.info("Added post:" + request.env.inspect)
+        @log.info("Added post:" + request.inspect)
     return muffin_number
   end
 
   def change_muffin_per_request( muffin_number, request ) # modify the Request in place; return nil if bad muffin number
     return nil if !isa_registered_muffin( muffin_number)
 
-    request.env["muffinNumber"] = muffin_number.to_s  #  modify the defining request!!
+    request.add_muffin_number(muffin_number)  #  modify the defining request!!
     @theMuffins[muffin_number].new_contents_from_request( request )
 
-        @log.info("Changed muffin:" + request.env.inspect)
+        @log.info("Changed muffin:" + request.inspect)
     return muffin_number
   end
 
   def tag_muffin_per_request( n_ignored, request ) #really want both numbers coming in here.but ok
-    muffin_name = request.params["MuffinNumber"]
+    muffin_name = request.requested_muffin_number_str
     muffin_number = number_or_nil( muffin_name )
     return nil if !isa_registered_muffin( muffin_number ) #FAIL! hopefully UI will stop this
 
-    collector_name = request.params["CollectorNumber"]
+    collector_name = request.collector_number_str
     collector_number = number_or_nil( collector_name  )
     return if !isa_registered_muffin( collector_number ) #FAIL! hopefully UI will stop this
 
-    request.env["muffinNumber"] = muffin_number.to_s  # explicitly add muffinNumber to the defining request
-    request.env["collectorNumber"] = collector_number.to_s  # THIS IS SILLY. STOP IT.
+
+    request.add_muffin_number(muffin_number)
+    request.add_collector_number(collector_number)
 
     @theMuffins[muffin_number].add_tag(collector_number)
 
-        @log.info("Received tag request with details:" + request.env.inspect)
+        @log.info("Received tag request with details:" + request.inspect)
     return muffin_number
   end
 
