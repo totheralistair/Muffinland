@@ -247,5 +247,3 @@ class Baker # knows the whereabouts and handlings of muffins.
   end
 
 end
-
-
