@@ -8,14 +8,14 @@
 </head>
 <body>
 
-<p> Page <%= netResult[:muffin_number] %> is:
+<p> Page <%= mlResult[:muffin_id] %> is:
   <br />
 
-    <%= netResult[:muffin_body] %>
+    <%= mlResult[:muffin_body] %>
 
     <br />
-        <% if netResult[:tags].size > 0 then %>
-        tagged to <% netResult[:tags].each {|tag|  %>
+        <% if mlResult[:tags].size > 0 then %>
+        tagged to <% mlResult[:tags].each {|tag|  %>
             <a href="<%= tag %>">Page <%= tag %> </a>,
       <% } %>
     <% end %>
@@ -27,7 +27,7 @@
 <form method="post" action="">
   <p>Go ahead and add another:
     <input type="text" name="MuffinContents" value="" >
-    <br />  <input type="submit" name="Go" value="Go">
+    <br />  <input type="submit" name="Add" value="Add">
   </p>
 </form>
 
@@ -52,15 +52,16 @@
 <hr />
 
 The Muffins:
-<% netResult[:dangerously_all_muffins].each_with_index { |value, index | %>
+<% mlResult[:dangerously_all_muffins].each_with_index { |value, index | %>
     <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value %> </p>
 <% } %>
 
 <hr />
 The Requests as they arrived:
-<% netResult[:dangerously_all_posts].each_with_index { |value, index | %>
+<% mlResult[:dangerously_all_posts].each_with_index { |value, index | %>
     <p> request:<%= index %> was <%= value %> </p>
 <% } %>
+
 
 
 </body>

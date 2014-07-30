@@ -11,7 +11,7 @@
 
 <hr />
 
-Welcome to Muffinland. Nothing with the name <%= netResult[:requested_name]%>.
+Welcome to Muffinland. Nothing with the name <%= mlResult[:requested_name]%>.
 
 
 <hr />
@@ -22,17 +22,17 @@ Welcome to Muffinland. Nothing with the name <%= netResult[:requested_name]%>.
 <form method="post" action="">
   <p>Add something if you like:
     <input type="text" name="MuffinContents" value="" >
-    <input type="submit" name="Go" value="Go"></p>
+    <input type="submit" name="Add" value="Add"></p>
 </form>
 
 
 The Muffins:
-<% netResult[:dangerously_all_muffins].each_with_index { |value, index | %>
+<% mlResult[:dangerously_all_muffins].each_with_index { |value, index | %>
     <p> <a href="<%= index %>">Muffin <%= index %> </a> is <%= value %> </p>
 <% } %>
 
 The Posts:
-<% netResult[:dangerously_all_posts].each_with_index { |value, index | %>
+<% mlResult[:dangerously_all_posts].each_with_index { |value, index | %>
     <p> request:<%= index %> was <%= value %> </p>
 <% } %>
 
