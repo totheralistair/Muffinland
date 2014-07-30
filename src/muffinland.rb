@@ -235,8 +235,11 @@ end
 
   def tag_muffin_per_request( request )
     return nil if !is_legit?( id = request.incoming_muffin_id )
-    return nil if !is_legit?( collector_id = request.collector_id_from_params )
-    muffin_at( id ).add_tag( collector_id )
+    collector_id = request.incoming_collector_id
+    return nil if !is_legit?( collector_id )
+    m = muffin_at( id )
+    m.add_tag( collector_id )
+    m
   end
 
 end
@@ -279,6 +282,7 @@ class MRackRequest < Mrequest
   def incoming_muffin_name;  @myMe.params["MuffinNumber"]   ;  end
   def incoming_muffin_id;  id_from_name( incoming_muffin_name ) ;  end
   def incoming_collector_name;  @myMe.params["CollectorNumber"] ;  end
+  def incoming_collector_id;  id_from_name( incoming_collector_name ) ;  end
   def incoming_contents;  @myMe.params["MuffinContents"] ;  end
   def record_muffin_id( n ) ;  @myMe.env["muffinID"] = n.to_s ;  end
 
