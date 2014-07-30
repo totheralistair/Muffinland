@@ -13,12 +13,6 @@ require_relative './mrequest.rb'
 
 
 #===== These i/o utilities should be in a shared place one day =====
-def emit_response_using_template( templateFullFn, binding)
-  response = Rack::Response.new
-  response.write  page_from_template( templateFullFn, binding )
-  response.finish
-end
-
 def page_from_template( templateFullFn, binding )
     pageTemplate = Erubis::Eruby.new(File.open( templateFullFn, 'r').read)
     pageTemplate.result(binding)
@@ -28,57 +22,62 @@ def zapout( str )
   print "\n #{str} \n"
 end
 
-#=====
+#=========================================
+# Muffinland know global policies and environment, not histories and private things.
 class Muffinland
-  # Muffinland know global policies and environment, not histories and private things.
 
   def initialize(viewsFolder)
     @theHistorian = Historian.new # knows the history of requests
     @theBaker = Baker.new         # knows the muffins
-
     @viewsFolder = viewsFolder    # I could hope this goes away one day, ugh.
     @log = Logger.new(STDOUT)
     @log.level = Logger::INFO
   end
 
   def call(env) #this is the Rack Request chain that kicks everything off
-    request = MRackRequest.new( Rack::Request.new(env) )
-    case
-      when request.get? then handle_get(request)
-      when request.post? then handle_post(request)
-    end
+    netResult = handle(
+        MRackRequest.new(     # Mrequests wrap various request types/sources
+            Rack::Request.new(env) ) )
+zapout netResult.inspect
+    page = page_from_template(
+        @viewsFolder + netResult[:html_template_fn],
+        binding )
+    response = Rack::Response.new
+    response.write( page )
+    response.finish
   end
-end
-
-#===== This utility belongs here =====
-def respond( templateJustFn, binding)
-  emit_response_using_template( @viewsFolder + templateJustFn, binding )
 end
 
 #===== GETs =====
+def handle( request ) # expects Mrequest
+  netResult =
+      case
+        when request.get? then handle_get(request)
+        when request.post? then handle_post(request)
+      end
+end
+
 def handle_get( request )
-
   muffin_name, muffin_number = @theBaker.nameAndNumber_from_path( request )
-
   (muffin_name,muffin_number = "0",0) if muffin_name==""
-
-  case
-    when @theHistorian.no_history_to_report
-      show_EmptyDB
-    when @theBaker.isa_registered_muffin( muffin_number)
-      show_muffin_numbered( muffin_number )
-    else
-      show_404_basic( request, muffin_name )
-  end
-
+  netResult =
+      case
+        when @theHistorian.no_history_to_report
+          netResult_EmptyDB
+        when @theBaker.isa_registered_muffin( muffin_number)
+          netResult_muffin_numbered( muffin_number )
+        else
+          netResult_404_basic( request, muffin_name )
+      end
 end
 
-def show_EmptyDB
-  respond("EmptyDB.erb", binding( ) )
+def netResult_EmptyDB
+  netResult = { :html_template_fn => "EmptyDB.erb" }
 end
 
-def show_404_basic( request, muffin_name )
-  reveal = {
+def netResult_404_basic( request, muffin_name )
+  netResult = {
+      :html_template_fn => "404.erb",
       :requested_name => muffin_name,
       :dangerously_all_muffins =>
           @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
@@ -86,11 +85,11 @@ def show_404_basic( request, muffin_name )
           @theHistorian.dangerously_all_posts.map{|req|
             req.requested_muffin_number_str }
   }
-  respond("404.erb", binding( ) )
 end
 
-def show_muffin_numbered( muffin_number )
-  reveal = {
+def netResult_muffin_numbered( muffin_number )
+  netResult = {
+      :html_template_fn => "GET_named_page.erb",
       :muffin_number => muffin_number,
       :muffin_body => @theBaker.raw_contents( muffin_number ),
       :tags => @theBaker.muffin(muffin_number).dangerously_all_tags,
@@ -99,42 +98,39 @@ def show_muffin_numbered( muffin_number )
       :dangerously_all_posts =>
           @theHistorian.dangerously_all_posts.map{|req|req.inspect}
   }
-  respond("GET_named_page.erb", binding())
 end
 
 
 #===================================================
 def handle_post( request ) # expect Rack::Request, emit Rack::Response
   @log.info("Just received POST:" + request.inspect)
-
   @theHistorian.add_request( request )
-
-  case   # dangerous: button names are in the Requests as commands!
-    when request.is_Go_command? then      handle_add_new_muffin(request)
+  case
+    when request.is_Go_command?     then  handle_add_muffin(request)
     when request.is_Change_command? then  handle_change_muffin(request)
-    when request.is_Tag_command? then     handle_tag_muffin(request)
+    when request.is_Tag_command?    then  handle_tag_muffin(request)
     else                                  print "DOIN NUTHNG"
   end
-
 end
 
-def handle_add_new_muffin( request )
-  muffin_number = @theBaker.add_new_muffin(request)
-  show_muffin_numbered( muffin_number )
+def handle_add_muffin( request )
+  netResult_muffin_numbered( @theBaker.add_new_muffin(request) )
 end
 
 def handle_change_muffin( request )
+  #TODO change to make netResult accept a muffin, not a muffin number, etc.
   muffin_name, muffin_number = @theBaker.nameAndNumber_from_params( request )
-  @theBaker.change_muffin_per_request( muffin_number, request ) ?
-      show_muffin_numbered( muffin_number ) :
-      show_404_basic( request, muffin_name )
+  theMuffin = @theBaker.change_muffin_per_request( muffin_number, request )
+  theMuffin ?
+      netResult_muffin_numbered( muffin_number ) :
+      netResult_404_basic( request, muffin_name )
 end
 
 def handle_tag_muffin( request )
   muffin_name, muffin_number = @theBaker.nameAndNumber_from_params( request )
   @theBaker.tag_muffin_per_request( muffin_number, request ) ?
-      show_muffin_numbered( muffin_number ) :
-      show_404_basic( request, muffin_name )
+      netResult_muffin_numbered( muffin_number ) :
+      netResult_404_basic( request, muffin_name )
 end
 
 
@@ -211,6 +207,8 @@ class Baker # knows the whereabouts and handlings of muffins.
     request.nameAndNumber_from_params
   end
 
+
+
   def add_new_muffin( request ) # modify the Request!, return muffin number
     muffin_number = @theMuffins.size
     request.add_muffin_number(muffin_number)  #  modify the defining request!!
@@ -219,13 +217,18 @@ class Baker # knows the whereabouts and handlings of muffins.
     return muffin_number
   end
 
+
+
   def change_muffin_per_request( muffin_number, request ) # modify the Request in place; return nil if bad muffin number
+    muffin_name, muffin_number = nameAndNumber_from_params( request )
     return nil if !isa_registered_muffin( muffin_number)
     request.add_muffin_number(muffin_number)  #  modify the defining request!!
     @theMuffins[muffin_number].new_contents_from_request( request )
         @log.info("Changed muffin:" + request.inspect)
-    return muffin_number
+    return muffin
   end
+
+
 
   def tag_muffin_per_request( n_ignored, request ) #really want both numbers coming in here.but ok
     muffin_name = request.requested_muffin_number_str

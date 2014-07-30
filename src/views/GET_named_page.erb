@@ -8,14 +8,14 @@
 </head>
 <body>
 
-<p> Page <%= reveal[:muffin_number] %> is:
+<p> Page <%= netResult[:muffin_number] %> is:
   <br />
 
-    <%= reveal[:muffin_body] %>
+    <%= netResult[:muffin_body] %>
 
     <br />
-        <% if reveal[:tags].size > 0 then %>
-        tagged to <% reveal[:tags].each {|tag|  %>
+        <% if netResult[:tags].size > 0 then %>
+        tagged to <% netResult[:tags].each {|tag|  %>
             <a href="<%= tag %>">Page <%= tag %> </a>,
       <% } %>
     <% end %>
@@ -52,13 +52,13 @@
 <hr />
 
 The Muffins:
-<% reveal[:dangerously_all_muffins].each_with_index { |value, index | %>
+<% netResult[:dangerously_all_muffins].each_with_index { |value, index | %>
     <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value %> </p>
 <% } %>
 
 <hr />
 The Requests as they arrived:
-<% reveal[:dangerously_all_posts].each_with_index { |value, index | %>
+<% netResult[:dangerously_all_posts].each_with_index { |value, index | %>
     <p> request:<%= index %> was <%= value %> </p>
 <% } %>
 
