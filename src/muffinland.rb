@@ -8,7 +8,6 @@ require 'erb'
 require 'erubis'
 require 'logger'
 require 'set'
-require_relative './mrequest.rb'
 
 
 
