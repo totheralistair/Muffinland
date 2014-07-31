@@ -8,8 +8,6 @@ require 'erubis'
 require 'logger'
 require 'set'
 
-
-
 #===== Muffinland via Rack (hex adapter) =====
 
 class MuffinlandViaRack
