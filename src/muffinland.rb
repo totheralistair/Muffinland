@@ -1,6 +1,5 @@
 # Welcome to Muffinland, the lazy CMS (or something)
 # Alistair Cockburn and a couple of really nice friends
-# 2014-07-27 basic tagging put back in. wanting a "request-parser" thing
 # ideas: email, DTO test,
 
 require 'rack'
@@ -34,7 +33,7 @@ class Muffinland
   end
 
   def call(env) #this hooks into the Rack Request chain for Rack-driven use
-    mlResult = handle(        # all 'handle's return 'mlResult'
+    mlResult = handle(        # all 'handle's return 'mlResult' DTO
         MRackRequest.new(     # Mrequests wrap various request types/sources
             Rack::Request.new(env) ) )
 
@@ -43,13 +42,19 @@ class Muffinland
     page = page_from_template(
         @viewsFolder + mlResult[:html_template_fn],
         binding )
+
     response = Rack::Response.new
     response.write( page )
     response.finish
   end
 end
 
-def handle( request ) # expects Mrequest; all 'handle's return 'mlResult'
+#===== UI Edge of the Hexagon =====
+# you can invoke 'handle(request)' directly
+# input: any class that supports the Mrequest interface
+# output: a hash with all the data produced for consumption
+
+def handle( request ) # note: all 'handle's return 'mlResult' in a chain
   mlResult =
       case
         when request.get? then handle_get_muffin(request)
@@ -57,19 +62,7 @@ def handle( request ) # expects Mrequest; all 'handle's return 'mlResult'
       end
 end
 
-#===== GETs =====
-def handle_get_muffin( request )
-  m = @theBaker.muffin_at_GET_request( request ) # might be nil
-  mlResult =
-      case
-        when @theHistorian.no_history_to_report?
-          mlResult_for_EmptyDB
-        when m
-          mlResult_for_GET_muffin( m )
-        else
-          mlResult_for_404_basic( request )
-      end
-end
+#===== the set of outputs produced: =====
 
 def mlResult_for_EmptyDB
   mlResult = { :html_template_fn => "EmptyDB.erb" }
@@ -84,7 +77,7 @@ def mlResult_for_404_basic( request )
       :dangerously_all_posts =>
           @theHistorian.dangerously_all_posts.map{|req|
             req.incoming_muffin_name }
-      }
+  }
 end
 
 def mlResult_for_GET_muffin( muffin )
@@ -97,12 +90,29 @@ def mlResult_for_GET_muffin( muffin )
           @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
       :dangerously_all_posts =>
           @theHistorian.dangerously_all_posts.map{|req|req.inspect}
-      }
+  }
 end
 
 
-#===================================================
-def handle_post( request ) # expect Rack::Request, emit Rack::Response
+
+
+#===== The commands to be handled (and the handling)=======
+
+def handle_get_muffin( request )
+  m = @theBaker.muffin_at_GET_request( request )
+  mlResult =
+      case
+        when @theHistorian.no_history_to_report?
+          mlResult_for_EmptyDB
+        when m
+          mlResult_for_GET_muffin( m )
+        else
+          mlResult_for_404_basic( request )
+      end
+end
+
+
+def handle_post( request )
   @log.info("Just received POST:" + request.inspect)
   @theHistorian.add_request( request )
   case
@@ -131,8 +141,10 @@ def handle_tag_muffin( request )
 end
 
 
-#===================
-class Historian # knows the history of what has happened, all Posts
+#===== class Historian ==============
+# knows the history of what has happened, all Posts
+
+class Historian
 
   def initialize
     @thePosts = Array.new
@@ -147,7 +159,9 @@ class Historian # knows the history of what has happened, all Posts
 end
 
 
-#===================
+#===== class Muffin ==============
+# knows or can produce everything about itself. Knows nothing else
+
 class Muffin
 
   def initialize( id, raw_contents)
@@ -166,9 +180,11 @@ class Muffin
 
 end
 
-#===================
+#===== class MuffinTin ==============
 # known only by the Baker, the MuffinTin
 # knows what muffin ids are made from. shhhh top secret.
+# The Baker adds, finds, modifies muffins via the MuffinTin
+
 class MuffinTin
 
   def initialize
@@ -194,8 +210,10 @@ class MuffinTin
 
 end
 
-#===================
-  class Baker # knows the handlings of muffins.
+#===== class Baker ==============
+# knows the handlings of muffins.
+
+class Baker
 
   def initialize
     @muffinTin = MuffinTin.new
@@ -211,7 +229,7 @@ end
   end
 
   def muffin_at_GET_request( request )
-    id = request.id_from_path
+    id = request.id_from_path   # not sure why Baker knows request from path. suspect
     muffin_at(id) if is_legit?(id)
   end
 
@@ -246,10 +264,10 @@ end
 
 
 
-#==================================
-# Mrequest is the class hierarchy that know what
-# flavor of request is coming into Muffinland.
-# Could be a Rack::Request or a DTORequest for testing
+#===== class Mrequest =========================
+# Mrequest defines the protocol for requests that
+# can be sent in to Muffinland.
+# Rack::Request to start with, but simpler ones for testing, possibly
 
 class Mrequest
 
@@ -270,11 +288,11 @@ class MRackRequest < Mrequest
 
   end
 
-  def get?  ;  @myMe.get? ;  end
+  def get?  ; @myMe.get? ;  end
   def post? ; @myMe.post? || @myMe.path=="/post"            ; end
-    def is_Add_command? ;     @myMe.params.has_key?("Add")  ; end
+  def is_Add_command?    ;  @myMe.params.has_key?("Add")    ; end
   def is_Change_command? ;  @myMe.params.has_key?("Change") ; end
-  def is_Tag_command? ;     @myMe.params.has_key?("Tag")    ; end
+  def is_Tag_command?    ;  @myMe.params.has_key?("Tag")    ; end
 
   def name_from_path ;  @myMe.path[ 1..@myMe.path.size ] ;  end
   def id_from_path ;  id_from_name( name_from_path )     ;  end
@@ -291,7 +309,5 @@ class MRackRequest < Mrequest
     rescue ArgumentError    # here mark impossible conversions
       nil                   # personally I find this little method distressing
   end                       # but what do I know.
-
-
 
 end
