@@ -63,21 +63,25 @@ class Muffinland
     @log.level = Logger::INFO
   end
 
-
-#===== UI/web port of the Hexagon =====
-# 'handle(request)' is the ui port (for http/cmd/test driven use)
+#===== UI Edge of the Hexagon =====
+# you can invoke 'handle(request)' directly
 # input: any class that supports the Mrequest interface
 # output: a hash with all the data produced for consumption
 
   def handle( request ) # note: all 'handle's return 'mlResult' in a chain
+    request.record_time( "ml_arrival_time", Time.now )
+    @log.info("Just arrived:" + request.inspect)
     mlResult =
         case
           when request.get? then handle_get_muffin(request)
           when request.post? then handle_post(request)
         end
+    request.record_time( "ml_completion_time", Time.now )
+    @log.info("Just completed:" + request.inspect)
+    mlResult
   end
 
-  #----- the set of outputs produced: -------
+#===== the set of outputs produced: =====
 
   def mlResult_for_EmptyDB
     mlResult = { :html_template_fn => "EmptyDB.erb" }
@@ -110,6 +114,9 @@ class Muffinland
 
 
 
+
+#===== The commands to be handled (and the handling)=======
+
   def handle_get_muffin( request )
     m = @theBaker.muffin_at_GET_request( request )
     mlResult =
@@ -125,14 +132,18 @@ class Muffinland
 
 
   def handle_post( request )
-    @log.info("Just received POST:" + request.inspect)
     @theHistorian.add_request( request )
-    case
-      when request.is_Add_command?    then  handle_add_muffin(request)
-      when request.is_Change_command? then  handle_change_muffin(request)
-      when request.is_Tag_command?    then  handle_tag_muffin(request)
-        else                          @log.info "DOIN NUTHNG. not a recognized command"
-    end
+    mlResult = case
+                 when request.is_Add_command?    then  handle_add_muffin(request)
+                 when request.is_Change_command? then  handle_change_muffin(request)
+                 when request.is_Tag_command?    then  handle_tag_muffin(request)
+                 else                          handle_unknown_post(request)
+               end
+  end
+
+  def handle_unknown_post( request )
+    @log.info "DOIN NUTHNG. not a recognized command"
+    # not correct, should respond mlResult and do ?something?
   end
 
   def handle_add_muffin( request )
@@ -155,7 +166,6 @@ class Muffinland
 end
 
 
-
 #===== class Historian ==============
 # knows the history of what has happened, all Posts
 
@@ -169,7 +179,11 @@ class Historian
 
   def no_history_to_report?;  @thePosts.size == 0 ;  end
   def dangerously_all_posts ;  @thePosts ;  end  #yep, dangerous. remove eventually
-  def add_request( request ) ;  @thePosts << request ;  end
+
+
+  def add_request( request )
+    @thePosts << request
+  end
 
 end
 
@@ -183,8 +197,8 @@ class Muffin
     @myID = id
     @myRaw = raw_contents
     @myTags = Set.new
-        @log = Logger.new(STDOUT)
-        @log.level = Logger::INFO
+    @log = Logger.new(STDOUT)
+    @log.level = Logger::INFO
   end
 
   def id  ;  @myID  ;  end
@@ -232,8 +246,8 @@ class Baker
 
   def initialize
     @muffinTin = MuffinTin.new
-        @log = Logger.new(STDOUT)
-        @log.level = Logger::INFO
+    @log = Logger.new(STDOUT)
+    @log.level = Logger::INFO
   end
 
   def muffin_at(id) ;  @muffinTin.at( id ) ;  end
@@ -252,7 +266,7 @@ class Baker
   def add_muffin( request ) # modify the Request!
     m = @muffinTin.add_raw( request.incoming_contents )
     request.record_muffin_id( m.id )  #  Look Out! modify the defining request!!
-       #the reason for this is this is the only record of the id of the new muffin
+    #the reason for this is this is the only record of the id of the new muffin
     return m
   end
 
@@ -295,6 +309,7 @@ end
 # a Rack::Request wrapper
 
 class MRackRequest < Mrequest
+  #note: this pile of accessors looks too complicated to me. Waiting for a simplification
 
   def initialize( rack_request )
     @myMe = rack_request
@@ -316,13 +331,16 @@ class MRackRequest < Mrequest
   def incoming_collector_name;  @myMe.params["CollectorNumber"] ;  end
   def incoming_collector_id;  id_from_name( incoming_collector_name ) ;  end
   def incoming_contents;  @myMe.params["MuffinContents"] ;  end
-  def record_muffin_id( n ) ;  @myMe.env["muffinID"] = n.to_s ;  end
+
+  # When needed: Modify the request itself
+  def record_muffin_id( n ) ;  @myMe.env["ml_muffin_ID"] = n.to_s ;  end
+  def record_time( tag, t ) ; @myMe.env[tag] = "#{t} ms:#{t.usec}" ;  end
 
   def id_from_name( name ) ;  number_or_nil(name) ;  end
   def number_or_nil(string) # convert string to a number, nil if not a number
     Integer(string)         # here do any possible conversion
-    rescue ArgumentError    # here mark impossible conversions
-      nil                   # personally I find this little method distressing
+  rescue ArgumentError    # here mark impossible conversions
+    nil                   # personally I find this little method distressing
   end                       # but what do I know.
 
 end

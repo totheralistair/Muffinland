@@ -1,3 +1,4 @@
+=begin
 # Welcome to Muffinland, the lazy CMS (or something)
 # Alistair Cockburn and a couple of really nice friends
 # ideas: email, DTO test,
@@ -327,4 +328,4 @@ class MRackRequest < Mrequest
       nil                   # personally I find this little method distressing
   end                       # but what do I know.
 
-end
+end=end
