@@ -37,7 +37,7 @@ class Muffinland
         MRackRequest.new(     # Mrequests wrap various request types/sources
             Rack::Request.new(env) ) )
 
-    @log.info("Result Pack:" + mlResult.inspect)
+    @log.info("mlResult:" + mlResult.inspect)
 
     page = page_from_template(
         @viewsFolder + mlResult[:html_template_fn],
@@ -55,11 +55,16 @@ end
 # output: a hash with all the data produced for consumption
 
 def handle( request ) # note: all 'handle's return 'mlResult' in a chain
+  request.record_time( "ml_arrival_time", Time.now )
+  @log.info("Just arrived:" + request.inspect)
   mlResult =
       case
         when request.get? then handle_get_muffin(request)
         when request.post? then handle_post(request)
       end
+  request.record_time( "ml_completion_time", Time.now )
+  @log.info("Just completed:" + request.inspect)
+  mlResult
 end
 
 #===== the set of outputs produced: =====
@@ -113,14 +118,18 @@ end
 
 
 def handle_post( request )
-  @log.info("Just received POST:" + request.inspect)
   @theHistorian.add_request( request )
-  case
+  mlResult = case
     when request.is_Add_command?    then  handle_add_muffin(request)
     when request.is_Change_command? then  handle_change_muffin(request)
     when request.is_Tag_command?    then  handle_tag_muffin(request)
-      else                          @log.info "DOIN NUTHNG. not a recognized command"
+      else                          handle_unknown_post(request)
   end
+end
+
+def handle_unknown_post( request )
+  @log.info "DOIN NUTHNG. not a recognized command"
+  # not correct, should respond mlResult and do ?something?
 end
 
 def handle_add_muffin( request )
@@ -154,7 +163,11 @@ class Historian
 
   def no_history_to_report?;  @thePosts.size == 0 ;  end
   def dangerously_all_posts ;  @thePosts ;  end  #yep, dangerous. remove eventually
-  def add_request( request ) ;  @thePosts << request ;  end
+
+
+  def add_request( request )
+    @thePosts << request
+  end
 
 end
 
@@ -237,7 +250,7 @@ class Baker
   def add_muffin( request ) # modify the Request!
     m = @muffinTin.add_raw( request.incoming_contents )
     request.record_muffin_id( m.id )  #  Look Out! modify the defining request!!
-       #the reason for this is this is the only record of the id of the new muffin
+    #the reason for this is this is the only record of the id of the new muffin
     return m
   end
 
@@ -280,6 +293,7 @@ end
 # a Rack::Request wrapper
 
 class MRackRequest < Mrequest
+  #note: this pile of accessors looks too complicated to me. Waiting for a simplification
 
   def initialize( rack_request )
     @myMe = rack_request
@@ -301,7 +315,10 @@ class MRackRequest < Mrequest
   def incoming_collector_name;  @myMe.params["CollectorNumber"] ;  end
   def incoming_collector_id;  id_from_name( incoming_collector_name ) ;  end
   def incoming_contents;  @myMe.params["MuffinContents"] ;  end
-  def record_muffin_id( n ) ;  @myMe.env["muffinID"] = n.to_s ;  end
+
+  # When needed: Modify the request itself
+  def record_muffin_id( n ) ;  @myMe.env["ml_muffin_ID"] = n.to_s ;  end
+  def record_time( tag, t ) ; @myMe.env[tag] = "#{t} ms:#{t.usec}" ;  end
 
   def id_from_name( name ) ;  number_or_nil(name) ;  end
   def number_or_nil(string) # convert string to a number, nil if not a number
