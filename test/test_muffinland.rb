@@ -3,7 +3,7 @@ require 'rspec/expectations'
 require 'test/unit'
 require 'erubis'
 
-require_relative '../src/muffinland_deprecated.rb'
+require_relative '../src/muffinland.rb'
 
 class TestRequests < Test::Unit::TestCase
   include Rack::Test::Methods
