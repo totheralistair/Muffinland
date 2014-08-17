@@ -27,14 +27,16 @@ Welcome to Muffinland. Nothing with the name <%= mlResult[:requested_name]%>.
 
 
 The Muffins:
-<% mlResult[:dangerously_all_muffins].each_with_index { |value, index | %>
-    <p> <a href="<%= index %>">Muffin <%= index %> </a> is <%= value %> </p>
+<% mlResult[:dangerously_all_muffins_raw].each_with_index { |value, index | %>
+    <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value %> </p>
 <% } %>
 
-The Posts:
+<hr />
+The Requests as they arrived:
 <% mlResult[:dangerously_all_posts].each_with_index { |value, index | %>
     <p> request:<%= index %> was <%= value %> </p>
 <% } %>
+
 
 
 </body>

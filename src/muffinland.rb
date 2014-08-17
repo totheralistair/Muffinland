@@ -2,53 +2,11 @@
 # Alistair Cockburn and a couple of really nice friends
 # ideas: email, DTO test,
 
-require 'rack'
-require 'erb'
-require 'erubis'
 require 'logger'
-require 'set'
 require_relative '../src/baker'
 require_relative '../src/muffin'
 require_relative '../src/historian'
 require_relative '../src/ml_request'
-
-def page_from_template( templateFullFn, binding )
-  pageTemplate = Erubis::Eruby.new(File.open( templateFullFn, 'r').read)
-  pageTemplate.result(binding)
-end
-
-
-
-class MuffinlandViaRack # Hex adapter to Muffinland from web using Rack
-
-  def initialize( viewsFolder ) #ugh on passing viewsFolder in :(
-    @viewsFolder = viewsFolder
-    @ml = Muffinland.new
-    @log = Logger.new(STDOUT)
-    @log.level = Logger::INFO
-  end
-
-  def call(env) # hooks into the Rack Request chain
-
-    mlResult = @ml.handle(        # all 'handle's return 'mlResult' DTO
-        Ml_RackRequest.new(     # Mrequests wrap various request types/sources
-            Rack::Request.new(env) ) )
-
-    @log.info("Result Pack:" + mlResult.inspect)
-
-    page = page_from_template(
-        @viewsFolder + mlResult[:html_template_fn],
-        binding )
-
-    response = Rack::Response.new
-    response.write( page )
-    response.finish
-  end
-
-end
-
-
-
 
 
 class Muffinland
@@ -69,12 +27,15 @@ class Muffinland
   def handle( request ) # note: all 'handle's return 'mlResult' in a chain
     request.record_time( "ml_arrival_time", Time.now )
     @log.info("Just arrived:" + request.inspect)
+
     mlResult =
         case
           when request.get? then handle_get_muffin(request)
           when request.post? then handle_post(request)
         end
+
     request.record_time( "ml_completion_time", Time.now )
+
     @log.info("Just completed:" + request.inspect)
     mlResult
   end
@@ -82,28 +43,27 @@ class Muffinland
 #===== the set of outputs produced: =====
 
   def mlResult_for_EmptyDB
-    mlResult = { :html_template_fn => "EmptyDB.erb" }
+    mlResult = { :out_action => "EmptyDB" }
   end
 
   def mlResult_for_404_basic( request )
     mlResult = {
-        :html_template_fn => "404.erb",
+        :out_action => "404",
         :requested_name => request.name_from_path,
-        :dangerously_all_muffins =>
+        :dangerously_all_muffins_raw =>
             @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
         :dangerously_all_posts =>
-            @theHistorian.dangerously_all_posts.map{|req|
-              req.incoming_muffin_name }
+            @theHistorian.dangerously_all_posts.map{|req|req.inspect}
     }
   end
 
   def mlResult_for_GET_muffin( muffin )
     mlResult = {
-        :html_template_fn => "GET_named_page.erb",
+        :out_action => "GET_named_page",
         :muffin_id => muffin.id,
         :muffin_body => muffin.raw,
         :tags => muffin.dangerously_all_tags,
-        :dangerously_all_muffins =>
+        :dangerously_all_muffins_raw =>
             @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
         :dangerously_all_posts =>
             @theHistorian.dangerously_all_posts.map{|req|req.inspect}
@@ -135,6 +95,7 @@ class Muffinland
                  when request.is_Add_command?    then  handle_add_muffin(request)
                  when request.is_Change_command? then  handle_change_muffin(request)
                  when request.is_Tag_command?    then  handle_tag_muffin(request)
+                 when request.is_Upload_command? then  handle_upload_file(request)
                  else                          handle_unknown_post(request)
                end
   end
@@ -160,6 +121,42 @@ class Muffinland
     m ? mlResult_for_GET_muffin( m ) :
         mlResult_for_404_basic( request ) # not correct, cuz failure may be collector id
   end
+
+  def handle_upload_file( request )
+    @log.info "File upload requested, let's see"
+    mlResult_for_404_basic( request )
+  end
+
+=begin
+
+@params={
+  "file"=>{
+    :filename=>"4x4.png",
+    :type=>"image/png",
+    :name=>"file",
+    :tempfile=>#<
+      Tempfile:/var/folders/2d/9q3nv99167l4w3qwqv8jj8140000gn/T/RackMultipart20140816-35691-1p3puwp
+      >,
+    :head=>"Content-Disposition: form-data; name=\"file\"; filename=\"4x4.png\"\r\nContent-Type: image/png\r\n"},
+    "submit"=>"Submit"
+  }>,
+@log=#<Logger:0x0000010186f5e0
+@progname=nil,
+@level=1,
+@default_formatter=#<Logger::Formatter:0x0000010186f4c8
+@datetime_format=nil>,
+@formatter=nil,
+@logdev=#<Logger::LogDevice:0x0000010186f428
+@shift_size=nil,
+@shift_age=nil,
+@filename=nil,
+@dev=#<IO:<STDOUT>>,
+@mutex=#<Logger::LogDevice::LogDeviceMutex:0x0000010186f400
+@mon_owner=nil,
+@mon_count=0,
+@mon_mutex=#<Mutex:0x0000010186f338>>>>>
+
+=end
 
 end
 

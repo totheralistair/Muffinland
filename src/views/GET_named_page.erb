@@ -49,10 +49,23 @@
   </p>
 </form>
 
+
+<form method="post" action=""
+      enctype="multipart/form-data">
+  <label for="file">Filename:</label>
+  <input type="file" name="file" id="file"><br>
+  <input type="submit" name="Upload" value="Upload">
+</form>
+
+
+
+
+
+
 <hr />
 
 The Muffins:
-<% mlResult[:dangerously_all_muffins].each_with_index { |value, index | %>
+<% mlResult[:dangerously_all_muffins_raw].each_with_index { |value, index | %>
     <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value %> </p>
 <% } %>
 
