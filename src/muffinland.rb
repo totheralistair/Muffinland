@@ -24,11 +24,11 @@ class Muffinland
 # input: any class that supports the Ml_request interface
 # output: a hash with all the data produced for consumption
 
-  def handle( request ) # note: all 'handle's return 'mlResult' in a chain
+  def handle( request ) # note: all 'handle's return 'mlResponse' in a chain
     request.record_arrival_time
     @log.info("Just arrived:" + request.inspect)
 
-    mlResult =
+    mlResponse =
         case
           when request.is_get? then handle_get_muffin(request)
           when request.is_post? then handle_post(request)
@@ -37,21 +37,21 @@ class Muffinland
     request.record_completion_time
 
     @log.info("Just completed:" + request.inspect)
-    mlResult
+    mlResponse
   end
 
 #===== the set of outputs produced: =====
 
-  def mlResult_for_EmptyDB
-    mlResult = { :out_action => "EmptyDB" }
+  def mlResponse_for_EmptyDB
+    mlResponse = { :out_action => "EmptyDB" }
   end
 
-  def mlResult_for_UnregisteredCommand
-    mlResult = { :out_action => "Unregistered Command" }
+  def mlResponse_for_UnregisteredCommand
+    mlResponse = { :out_action => "Unregistered Command" }
   end
 
-  def mlResult_for_404_basic( request )
-    mlResult = {
+  def mlResponse_for_404_basic( request )
+    mlResponse = {
         :out_action => "404",
         :requested_name => request.name_from_path,
         :dangerously_all_muffins_raw =>
@@ -61,8 +61,8 @@ class Muffinland
     }
   end
 
-  def mlResult_for_GET_muffin( muffin )
-    mlResult = {
+  def mlResponse_for_GET_muffin( muffin )
+    mlResponse = {
         :out_action => "GET_named_page",
         :muffin_id => muffin.id,
         :muffin_body => muffin.raw,
@@ -81,21 +81,21 @@ class Muffinland
 
   def handle_get_muffin( request )
     m = @theBaker.muffin_at_GET_request( request )
-    mlResult =
+    mlResponse =
         case
           when @theHistorian.no_history_to_report?
-            mlResult_for_EmptyDB
+            mlResponse_for_EmptyDB
           when m
-            mlResult_for_GET_muffin( m )
+            mlResponse_for_GET_muffin( m )
           else
-            mlResult_for_404_basic( request )
+            mlResponse_for_404_basic( request )
         end
   end
 
 
   def handle_post( request )
     @theHistorian.add_request( request )
-    mlResult = case
+    mlResponse = case
                  when request.is_Add_command?    then  handle_add_muffin(request)
                  when request.is_Change_command? then  handle_change_muffin(request)
                  when request.is_Tag_command?    then  handle_tag_muffin(request)
@@ -106,29 +106,29 @@ class Muffinland
 
   def handle_unknown_post( request )
     @log.info "DOIN NUTHNG. not a recognized command"
-    mlResult_for_UnregisteredCommand
+    mlResponse_for_UnregisteredCommand
   end
 
   def handle_add_muffin( request )
     m = @theBaker.add_muffin(request)
-    mlResult_for_GET_muffin( m )
+    mlResponse_for_GET_muffin( m )
   end
 
   def handle_change_muffin( request )
     m = @theBaker.change_muffin_per_request( request )
-    m ? mlResult_for_GET_muffin( m ) :
-        mlResult_for_404_basic( request )
+    m ? mlResponse_for_GET_muffin( m ) :
+        mlResponse_for_404_basic( request )
   end
 
   def handle_tag_muffin( request )
     m = @theBaker.tag_muffin_per_request( request )
-    m ? mlResult_for_GET_muffin( m ) :
-        mlResult_for_404_basic( request ) # not correct, cuz failure may be collector id
+    m ? mlResponse_for_GET_muffin( m ) :
+        mlResponse_for_404_basic( request ) # not correct, cuz failure may be collector id
   end
 
   def handle_upload_file( request )   # just barely stasted, not working yet
     @log.info "File upload requested, let's see"
-    mlResult_for_404_basic( request )
+    mlResponse_for_404_basic( request )
   end
 
 =begin
