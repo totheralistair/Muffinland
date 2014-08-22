@@ -2,7 +2,7 @@ require 'logger'
 require 'rack'
 require_relative '../src/muffinland'
 require_relative '../src/ml_request'
-require_relative '../src/htmlpage_from_templatefile'
+require_relative '../src/html_from_templatefile'
 
 
 class Muffinland_via_rack
@@ -20,6 +20,7 @@ class Muffinland_via_rack
   def call(env) # hooks into the Rack Request chain
     request = Ml_RackRequest.new( Rack::Request.new(env) ) # hide the 'Rack'ness
     mlResult = @ml.handle( request )
+
     @log.info("mlResult:" + mlResult.inspect)
 
     template_fn = @viewsFolder + mlResult[:out_action] + ".erb"

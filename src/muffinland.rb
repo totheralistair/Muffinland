@@ -19,22 +19,22 @@ class Muffinland
     @log.level = Logger::INFO
   end
 
-#===== UI Edge of the Hexagon =====
+#===== Visitor Edge of the Hexagon =====
 # can invoke 'handle(request)' directly.
 # input: any class that supports the Ml_request interface
 # output: a hash with all the data produced for consumption
 
   def handle( request ) # note: all 'handle's return 'mlResult' in a chain
-    request.record_time( "ml_arrival_time", Time.now )
+    request.record_arrival_time
     @log.info("Just arrived:" + request.inspect)
 
     mlResult =
         case
-          when request.get? then handle_get_muffin(request)
-          when request.post? then handle_post(request)
+          when request.is_get? then handle_get_muffin(request)
+          when request.is_post? then handle_post(request)
         end
 
-    request.record_time( "ml_completion_time", Time.now )
+    request.record_completion_time
 
     @log.info("Just completed:" + request.inspect)
     mlResult
@@ -44,6 +44,10 @@ class Muffinland
 
   def mlResult_for_EmptyDB
     mlResult = { :out_action => "EmptyDB" }
+  end
+
+  def mlResult_for_UnregisteredCommand
+    mlResult = { :out_action => "Unregistered Command" }
   end
 
   def mlResult_for_404_basic( request )
@@ -102,7 +106,7 @@ class Muffinland
 
   def handle_unknown_post( request )
     @log.info "DOIN NUTHNG. not a recognized command"
-    # not correct, should respond mlResult and do ?something?
+    mlResult_for_UnregisteredCommand
   end
 
   def handle_add_muffin( request )
@@ -122,7 +126,7 @@ class Muffinland
         mlResult_for_404_basic( request ) # not correct, cuz failure may be collector id
   end
 
-  def handle_upload_file( request )
+  def handle_upload_file( request )   # just barely stasted, not working yet
     @log.info "File upload requested, let's see"
     mlResult_for_404_basic( request )
   end

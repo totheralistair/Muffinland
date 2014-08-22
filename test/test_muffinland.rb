@@ -4,99 +4,126 @@ require 'test/unit'
 require 'erubis'
 
 require_relative '../src/muffinland.rb'
+require_relative '../src/ml_request.rb'
 
 class TestRequests < Test::Unit::TestCase
-  include Rack::Test::Methods
 
-  def run_without_server(app, method, route, params={})    # parameterized for GETs and POSTs
-    aRequest = Rack::MockRequest.new(app)
-    aRequest.request(method, route, {:params=>params})
+  # NOT being used currently. Was working. Shifting now to API tests
+  # I'm leaving it in here as an example of how to do it
+  include Rack::Test::Methods
+  def request_via_rack_without_server( app, method, path, params={} )
+  # note: app should be Muffinland_via_rack (ui adapter to visitor port on hexagon)
+     rackRequest = Rack::MockRequest.new(app)
+     rackRequest.request(method, path, {:params=>params})
+  end
+
+
+  def request_via_API( app, method, path, params={} )
+    # note: app should be Muffinland directly (hexagon API)
+    app.handle  Ml_request_simple.build( method, path, params )
   end
 
 
 #=================================================
-  def test_00_emptyDB_404
-    puts "test_00_emptyDB_404"
-    viewsFolder = "../src/views/"
-    app = Muffinland.new(viewsFolder)
+  def test_00_emptyDB_is_special_case
+    puts "starting test_00_emptyDB"
+    app = Muffinland.new
 
-    path, params = '/', '{}'
-    next_available_muffin_number = 0
-    @myPosts = Array.new
-    exp = page_from_template( viewsFolder + "EmptyDB.erb", binding() )
-    got = run_without_server( app, "GET", '/').body
+    got = request_via_API( app, "GET", '/' )
+    exp = {:out_action=>"EmptyDB"}
     got.should == exp
 
-    path, params = '/aaa', '{}'
-    next_available_muffin_number = 0
-    exp = page_from_template( viewsFolder + "EmptyDB.erb", binding() )
-    got = run_without_server( app, "GET", '/aaa').body
-    got.should == exp
-  end
-
-  def test_01_posts
-    puts "test_01_posts"
-    @myPosts = Array.new
-    viewsFolder = "../src/views/"
-    app = Muffinland.new(viewsFolder)
-
-    path, params = '/ignored', '{"InputValue"=>"test1"}'
-    muffin_number, muffin_contents = 0, 'test1'
-    next_available_muffin_number = 1
-    exp = page_from_template( viewsFolder + "GET_named_page.erb", binding() )
-    got = run_without_server( app, "POST", '/ignored',"InputValue"=>"test1").body    # 'login=WoW').body
+    got = request_via_API( app, "GET", '/aaa' )
+    exp =  {:out_action=>"EmptyDB"}
     got.should == exp
 
-    path, params = '/stillignored', '{"InputValue"=>"test2"}'
-    muffin_number, muffin_contents = 1, 'test2'
-    next_available_muffin_number = 2
-    exp = page_from_template( viewsFolder + "GET_named_page.erb", binding() )
-    got = run_without_server( app, "POST", '/stillignored',"InputValue"=>"test2").body    # 'login=WoW').body
-    got.should == exp
+    puts "done test_00_emptyDB"
   end
 
 
-  def test_02_postAndGet
-    puts "test_02_postAndGet"
-    @myPosts = Array.new
-    viewsFolder = "../src/views/"
-    app = Muffinland.new(viewsFolder)
+#=================================================
+  def test_01_posts_return_contents
+    puts "starting test_01_posts"
+    app = Muffinland.new
 
-    path, params = '/ignored', '{"InputValue"=>"test1"}'
-    muffin_number, muffin_contents = 0, 'test1'
-    next_available_muffin_number = 1
-    exp = page_from_template( viewsFolder + "GET_named_page.erb", binding() )
-    got = run_without_server( app, "POST", '/ignored',"InputValue"=>"test1").body    # 'login=WoW').body
+    mlRequest = request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
+    exp = {
+        :outAction => "GET_named_page",
+        :muffin_id => 0,
+        :dangerously_all_muffins_raw => ["a"]
+    }
+
+    got = {
+        :outAction=> mlRequest[:out_action],
+        :muffin_id => mlRequest[:muffin_id],
+        :dangerously_all_muffins_raw => mlRequest[:dangerously_all_muffins_raw]
+    }
+
     got.should == exp
 
-    path, params = '/stillignored', '{"InputValue"=>"test2"}'
-    muffin_number, muffin_contents = 1, 'test2'
-    next_available_muffin_number = 2
-    exp = page_from_template( viewsFolder + "GET_named_page.erb", binding() )
-    got = run_without_server( app, "POST", '/stillignored',"InputValue"=>"test2").body    # 'login=WoW').body
+    mlRequest = request_via_API( app, "POST", '/stillignored',{ "Add"=>"Add", "MuffinContents"=>"b" } )
+    exp = {
+    :outAction=> "GET_named_page",
+    :muffin_id => 1,
+    :dangerously_all_muffins_raw => ["a", "b"]
+    }
+    got = {
+        :outAction=> mlRequest[:out_action],
+        :muffin_id => mlRequest[:muffin_id],
+        :dangerously_all_muffins_raw => mlRequest[:dangerously_all_muffins_raw]
+    }
     got.should == exp
 
-    path, params = '/1', '{}'
-    muffin_number, muffin_contents  = 1, 'test2'
-    next_available_muffin_number = 2
-    exp = page_from_template( viewsFolder + "GET_named_page.erb", binding() )
-    got = run_without_server( app, "GET", '/1').body    # 'login=WoW').body
-    got.should == exp
-
-    path, params = '/0', '{}'
-    muffin_number, muffin_contents  = 0, 'test1'
-    next_available_muffin_number = 2
-    exp = page_from_template( viewsFolder + "GET_named_page.erb", binding() )
-    got = run_without_server( app, "GET", '/0').body    # 'login=WoW').body
-    got.should == exp
-
-    path, params = '/3', '{}'
-    muffin_number, muffin_contents  = 3, 'should produce a 404'
-    next_available_muffin_number = 2
-    exp = page_from_template( viewsFolder + "404.erb", binding() )
-    got = run_without_server( app, "GET", '/3').body    # 'login=WoW').body
-    got.should == exp
-
+    puts "done test_01_posts"
   end
+
+
+#=================================================
+  def test_02_can_post_and_get_even_404
+    puts "starting test_02_postAndGet"
+    app = Muffinland.new
+
+    request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
+    request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"b" } )
+    request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"c" } )
+    mlRequest = request_via_API( app, "GET", '/1' )
+    exp = {
+        :outAction=> "GET_named_page",
+        :muffin_id => 1,
+        :muffin_body => "b",
+        :dangerously_all_muffins_raw => ["a", "b", "c"]
+    }
+    got = {
+        :outAction=> mlRequest[:out_action],
+        :muffin_id => mlRequest[:muffin_id],
+        :muffin_body => mlRequest[:muffin_body],
+        :dangerously_all_muffins_raw => mlRequest[:dangerously_all_muffins_raw]
+    }
+    got.should == exp
+
+    mlRequest = request_via_API( app, "GET", '/77' )
+    exp = {
+        :outAction=> "404",
+        :muffin_id => nil,
+        :muffin_body => nil,
+        :dangerously_all_muffins_raw => ["a", "b", "c"]
+    }
+    got = {
+        :outAction=> mlRequest[:out_action],
+        :muffin_id => mlRequest[:muffin_id],
+        :muffin_body => mlRequest[:muffin_body],
+        :dangerously_all_muffins_raw => mlRequest[:dangerously_all_muffins_raw]
+    }
+    got.should == exp
+
+    puts "done test_02_postAndGet"
+  end
+
+  def test_03_can_change_a_muffin
+  end
+
+  def test_03_can_tag_a_muffin_to_another
+  end
+
 end
 
