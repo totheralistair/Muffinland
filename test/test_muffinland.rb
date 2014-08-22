@@ -43,13 +43,11 @@ class TestRequests < Test::Unit::TestCase
 
     mlRequest = request_via_API( app, "GET", '/' )
     exp = {:out_action=>"EmptyDB"}
-    got = subset_per_sample( exp, mlRequest )
-    got.should == exp
+    got = subset_per_sample( exp, mlRequest ) ;  got.should == exp
 
     mlRequest = request_via_API( app, "GET", '/aaa' )
     exp =  {:out_action=>"EmptyDB"}
-    got = subset_per_sample( exp, mlRequest )
-    got.should == exp
+    got = subset_per_sample( exp, mlRequest ) ;  got.should == exp
 
     puts "done test_00_emptyDB"
   end
@@ -66,8 +64,7 @@ class TestRequests < Test::Unit::TestCase
         :muffin_id => 0,
         :dangerously_all_muffins_raw => ["a"]
     }
-    got = subset_per_sample( exp, mlRequest )
-    got.should == exp
+    got = subset_per_sample( exp, mlRequest ) ;  got.should == exp
 
 
     mlRequest = request_via_API( app, "POST", '/stillignored',{ "Add"=>"Add", "MuffinContents"=>"b" } )
@@ -76,8 +73,7 @@ class TestRequests < Test::Unit::TestCase
     :muffin_id => 1,
     :dangerously_all_muffins_raw => ["a", "b"]
     }
-    got = subset_per_sample( exp, mlRequest )
-    got.should == exp
+    got = subset_per_sample( exp, mlRequest ) ;  got.should == exp
 
     puts "done test_01_posts"
   end
@@ -98,8 +94,7 @@ class TestRequests < Test::Unit::TestCase
         :muffin_body => "b",
         :dangerously_all_muffins_raw => ["a", "b", "c"]
     }
-    got = subset_per_sample( exp, mlRequest )
-    got.should == exp
+    got = subset_per_sample( exp, mlRequest ) ;  got.should == exp
 
     mlRequest = request_via_API( app, "GET", '/77' )
     exp = {
@@ -108,16 +103,48 @@ class TestRequests < Test::Unit::TestCase
         :muffin_body => nil,
         :dangerously_all_muffins_raw => ["a", "b", "c"]
     }
-    got = subset_per_sample( exp, mlRequest )
-    got.should == exp
+    got = subset_per_sample( exp, mlRequest ) ;  got.should == exp
 
     puts "done test_02_postAndGet"
   end
 
+#=================================================
   def test_03_can_change_a_muffin
+    puts "starting test_03_can_change_a_muffin"
+    app = Muffinland.new
+
+    request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
+    mlRequest = request_via_API( app, "POST", '/ignored',{ "Change"=>"Change", "MuffinName"=> "0", "MuffinContents"=>"b" } )
+    exp = {
+        :out_action=> "GET_named_page",
+        :muffin_id => 0,
+        :muffin_body => "b",
+        :dangerously_all_muffins_raw => ["b"]
+    }
+    got = subset_per_sample( exp, mlRequest ) ;  got.should == exp
+
+    puts "done test_03_can_change_a_muffin"
   end
 
+
+#=================================================
   def test_04_can_tag_a_muffin_to_another
+    puts "starting test_04_can_tag_a_muffin_to_another"
+    app = Muffinland.new
+
+    request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
+    request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"b" } )
+    mlRequest = request_via_API( app, "POST", '/ignored',{ "Tag"=>"Tag", "MuffinName"=> "0", "CollectorName"=>"1" } )
+    exp = {
+        :out_action=> "GET_named_page",
+        :muffin_id => 0,
+        :muffin_body => "a",
+        :tags => Set.new([1])  ,
+        :dangerously_all_muffins_raw => ["a", "b"]
+    }
+    got = subset_per_sample( exp, mlRequest ) ;  got.should == exp
+
+    puts "done test_04_can_tag_a_muffin_to_another"
   end
 
 end

@@ -91,9 +91,9 @@ class Ml_request_simple < Ml_request
 
   def name_from_path ;  n=@myMe["Path"].size; @myMe["Path"][ 1..n ] ;  end
   def id_from_path ;  id_from_name( name_from_path )     ;  end
-  def incoming_muffin_name;  @myMe["MuffinName"]   ;  end
+  def incoming_muffin_name;  v=@myMe["Params"]["MuffinName"]   ;  end
   def incoming_muffin_id;  id_from_name( incoming_muffin_name ) ;  end
-  def incoming_collector_name;  @myMe["CollectorName"] ;  end
+  def incoming_collector_name;  @myMe["Params"]["CollectorName"] ;  end
   def incoming_collector_id;  id_from_name( incoming_collector_name ) ;  end
   def incoming_contents;  @myMe["Params"]["MuffinContents"] ;  end
 
