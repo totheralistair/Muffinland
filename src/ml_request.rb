@@ -23,8 +23,8 @@ class Ml_RackRequest < Ml_request
     @myMe = rack_request
     @log = Logger.new(STDOUT)
     @log.level = Logger::INFO
-
   end
+
 
   def is_get?; @myMe.get? ;  end
   def is_post?; @myMe.post? || @myMe.path=="/post"            ; end
@@ -36,7 +36,7 @@ class Ml_RackRequest < Ml_request
   def name_from_path ;  @myMe.path[ 1..@myMe.path.size ] ;  end
   def id_from_path ;  id_from_name( name_from_path )     ;  end
   def incoming_muffin_name;  @myMe.params["MuffinNumber"]   ;  end
-  def incoming_muffin_id;  id_from_name( incoming_muffin_name ) ;  end
+  def incoming_muffin_id; n = incoming_muffin_name ; id_from_name( n ) ;  end
   def incoming_collector_name;  @myMe.params["CollectorNumber"] ;  end
   def incoming_collector_id;  id_from_name( incoming_collector_name ) ;  end
   def incoming_contents;  @myMe.params["MuffinContents"] ;  end
@@ -50,18 +50,18 @@ class Ml_RackRequest < Ml_request
 
 
   def id_from_name( name ) ;  number_or_nil(name) ;  end
-  def number_or_nil(string) # convert string to a number, nil if not a number
-    Integer(string)         # here do any possible conversion
-  rescue ArgumentError    # here mark impossible conversions
-    nil                   # personally I find this little method distressing
-  end                       # but what do I know.
+  def number_or_nil( s ) # convert string to a number, nil if not a number
+    i= s.to_i
+    i.to_s == s ? i : nil
+  end
 
 end
 
 
 #==================================
 # a Ml_request wrapper for simple testing and API usage
-
+# deprecated cuz I don't think it's really needed; taking it out to test; leaving it in comments just cuz
+=begin
 class Ml_request_simple < Ml_request
   def initialize
     @myMe = Hash.new
@@ -91,9 +91,9 @@ class Ml_request_simple < Ml_request
 
   def name_from_path ;  n=@myMe["Path"].size; @myMe["Path"][ 1..n ] ;  end
   def id_from_path ;  id_from_name( name_from_path )     ;  end
-  def incoming_muffin_name;  v=@myMe["Params"]["MuffinName"]   ;  end
+  def incoming_muffin_name;  v=@myMe["Params"]["MuffinNumber"]   ;  end
   def incoming_muffin_id;  id_from_name( incoming_muffin_name ) ;  end
-  def incoming_collector_name;  @myMe["Params"]["CollectorName"] ;  end
+  def incoming_collector_name;  @myMe["Params"]["CollectorNumber"] ;  end
   def incoming_collector_id;  id_from_name( incoming_collector_name ) ;  end
   def incoming_contents;  @myMe["Params"]["MuffinContents"] ;  end
 
@@ -106,10 +106,10 @@ class Ml_request_simple < Ml_request
 
 
   def id_from_name( name ) ;  number_or_nil(name) ;  end
-  def number_or_nil(string) # convert string to a number, nil if not a number
-    Integer(string)         # here do any possible conversion
-  rescue ArgumentError      # here mark impossible conversions
-    nil                     # personally I find this little method distressing
-  end                       # but what do I know.
+  def number_or_nil( s ) # convert string to a number, nil if not a number
+    i= s.to_i
+    i.to_s == s ? i : nil
+  end
 
 end
+=end

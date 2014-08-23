@@ -20,13 +20,13 @@ class Muffinland
   end
 
 #===== Visitor Edge of the Hexagon =====
-# can invoke 'handle(request)' directly.
+# invoke 'handle(request)' directly.
 # input: any class that supports the Ml_request interface
 # output: a hash with all the data produced for consumption
 
   def handle( request ) # note: all 'handle's return 'mlResponse' in a chain
     request.record_arrival_time
-    @log.info("Just arrived:" + request.inspect)
+    @log.info("Arrived:" + request.inspect)
 
     mlResponse =
         case
@@ -36,7 +36,7 @@ class Muffinland
 
     request.record_completion_time
 
-    @log.info("Just completed:" + request.inspect)
+    @log.info("Completed:" + request.inspect)
     mlResponse
   end
 
