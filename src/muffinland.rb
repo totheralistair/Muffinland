@@ -62,9 +62,9 @@ class Muffinland
     @theHistorian.add_request( request )
     mlResponse = case
                  when request.is_Add_command?    then  handle_add_muffin(request)
+                 when request.is_Upload_command? then  handle_upload_file(request)
                  when request.is_Change_command? then  handle_change_muffin(request)
                  when request.is_Tag_command?    then  handle_tag_muffin(request)
-                 when request.is_Upload_command? then  handle_upload_file(request)
                  else                          handle_unknown_post(request)
                end
   end
@@ -79,6 +79,11 @@ class Muffinland
     mlResponse_for_GET_muffin( m )
   end
 
+  def handle_upload_file( request )   # just barely stasted, not working yet
+    m = @theBaker.add_muffin_from_file(request)
+    mlResponse_for_GET_muffin( m )
+  end
+
   def handle_change_muffin( request )
     m = @theBaker.change_muffin_per_request( request )
     m ? mlResponse_for_GET_muffin( m ) :
@@ -89,11 +94,6 @@ class Muffinland
     m = @theBaker.tag_muffin_per_request( request )
     m ? mlResponse_for_GET_muffin( m ) :
         mlResponse_for_404_basic( request ) # not correct, cuz failure may be collector id
-  end
-
-  def handle_upload_file( request )   # just barely stasted, not working yet
-    @log.info "File upload requested, let's see"
-    mlResponse_for_404_basic( request )
   end
 
 =begin

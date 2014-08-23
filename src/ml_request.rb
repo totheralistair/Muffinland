@@ -41,6 +41,16 @@ class Ml_RackRequest < Ml_request
   def incoming_collector_id;  id_from_name( incoming_collector_name ) ;  end
   def incoming_contents;  @myMe.params["MuffinContents"] ;  end
 
+  def content_type_of_file_upload;
+    @myMe.params["file"][:type]
+  end
+  def content_of_file_upload;
+    pa = @myMe.params["file"][:tempfile].path
+    c = IO.binread(pa)
+    puts "contents:#{c}"
+    c
+  end
+
   # When needed: Modify the request itself
 
   def record( tag, valueString ) ;  @myMe.env[tag] = valueString ;  end
@@ -56,60 +66,3 @@ class Ml_RackRequest < Ml_request
   end
 
 end
-
-
-#==================================
-# a Ml_request wrapper for simple testing and API usage
-# deprecated cuz I don't think it's really needed; taking it out to test; leaving it in comments just cuz
-=begin
-class Ml_request_simple < Ml_request
-  def initialize
-    @myMe = Hash.new
-    @log = Logger.new(STDOUT)
-    @log.level = Logger::INFO
-  end
-
-  def self.build( method, path, params={} ) # simulate building a rack request
-    r = new
-    r.method(method)
-    r.path(path)
-    r.params(params)
-  end
-
-  def record( tag, valueString ) ;  @myMe[tag] = valueString ; self ;  end
-
-  def method( s ) ; record("Method", s ) ; end
-  def path( s ) ; record("Path", s ) ; end
-  def params( h ) ; record("Params", h ) ; end
-
-  def is_get?; @myMe["Method"]=="GET" ;  end
-  def is_post?; @myMe["Method"]=="POST" ;  end
-  def is_Add_command?    ; @myMe["Params"].has_key?("Add")    ; end
-  def is_Change_command?    ;  @myMe["Params"].has_key?("Change")    ; end
-  def is_Tag_command?    ;  @myMe["Params"].has_key?("Tag")    ; end
-  def is_Upload_command?    ;  @myMe["Params"].has_key?("Upload")    ; end
-
-  def name_from_path ;  n=@myMe["Path"].size; @myMe["Path"][ 1..n ] ;  end
-  def id_from_path ;  id_from_name( name_from_path )     ;  end
-  def incoming_muffin_name;  v=@myMe["Params"]["MuffinNumber"]   ;  end
-  def incoming_muffin_id;  id_from_name( incoming_muffin_name ) ;  end
-  def incoming_collector_name;  @myMe["Params"]["CollectorNumber"] ;  end
-  def incoming_collector_id;  id_from_name( incoming_collector_name ) ;  end
-  def incoming_contents;  @myMe["Params"]["MuffinContents"] ;  end
-
-
-  # When needed: Modify the request itself
-
-  def record_muffin_id( id ) ;  record( "ml_muffin_ID", id.to_s ) ;  end
-  def record_arrival_time ; t=Time.now; record( "ml_arrival_time", "#{t} ms:#{t.usec}" ) ;  end
-  def record_completion_time ; t=Time.now; record( "ml_completion_time", "#{t} ms:#{t.usec}" ) ;  end
-
-
-  def id_from_name( name ) ;  number_or_nil(name) ;  end
-  def number_or_nil( s ) # convert string to a number, nil if not a number
-    i= s.to_i
-    i.to_s == s ? i : nil
-  end
-
-end
-=end

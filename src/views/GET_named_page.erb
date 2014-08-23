@@ -11,7 +11,7 @@
 <p> Page <%= mlResult[:muffin_id] %> is:
   <br />
 
-    <%= mlResult[:muffin_body] %>
+    <%= mlResult[:muffin_body].inspect %>
 
     <br />
         <% if mlResult[:tags].size > 0 then %>
@@ -23,13 +23,20 @@
 
 
 <hr />
-
+<p>Go ahead and add a muffin by text:  </p>
 <form method="post" action="">
-  <p>Go ahead and add another:
-    <input type="text" name="MuffinContents" value="" >
-    <br />  <input type="submit" name="Add" value="Add">
-  </p>
+  <input type="text" name="MuffinContents" value="" >
+  <br />  <input type="submit" name="Add" value="Add">
 </form>
+<p>or by file:  </p>
+<form method="post" action=""
+      enctype="multipart/form-data">
+  <label for="file">Filename:</label>
+  <input type="file" name="file" id="file"><br>
+  <input type="submit" name="Upload" value="Upload">
+</form>
+<hr />
+
 
 <form method="post" action="">
   <p>Or change page number
@@ -50,12 +57,6 @@
 </form>
 
 
-<form method="post" action=""
-      enctype="multipart/form-data">
-  <label for="file">Filename:</label>
-  <input type="file" name="file" id="file"><br>
-  <input type="submit" name="Upload" value="Upload">
-</form>
 
 
 
@@ -66,7 +67,7 @@
 
 The Muffins:
 <% mlResult[:dangerously_all_muffins_raw].each_with_index { |value, index | %>
-    <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value %> </p>
+    <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value.inspect %> </p>
 <% } %>
 
 <hr />

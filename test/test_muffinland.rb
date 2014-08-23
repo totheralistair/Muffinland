@@ -16,6 +16,19 @@ end
 
 
 #=== different ways of driving the app ======================
+def request_via_API( app, method, path, params={} ) # app should be Muffinland (hexagon API)
+  env = Rack::MockRequest.env_for(path, {:method => method, :params=>params, } )
+  request = Ml_RackRequest.new( Rack::Request.new(env) )
+  app.handle request                               #this goes straight to the app API
+end
+
+
+def request_via_rack_without_server( app, method, path, params={} ) # app should be Muffinland_via_rack
+  request = Rack::MockRequest.new(app)
+  request.request(method, path, {:params=>params}) #this sends the request through the Rack call(env) chain
+end
+
+
 =begin
 #deprecated because don't really need mlRequest_simple once I understand Rack better.
 def request_via_API_w_requestSimple_deprecated( app, method, path, params={} ) # app should be Muffinland (hexagon API)
@@ -24,18 +37,6 @@ def request_via_API_w_requestSimple_deprecated( app, method, path, params={} ) #
 end
 =end
 
-
-def request_via_API( app, method, path, params={} ) # app should be Muffinland (hexagon API)
-  env = Rack::MockRequest.env_for(path, {:method => method, :params=>params, } )
-  request = Ml_RackRequest.new( Rack::Request.new(env) )
-  app.handle request                               #this goes straight to the app API
-end
-
-
-def request_via_rack_without_server( app, method, path, params={} ) # app should be Muffinland_via_rack (ui adapter to visitor port on hexagon)
-  request = Rack::MockRequest.new(app)
-  request.request(method, path, {:params=>params}) #this sends the request through the Rack call(env) chain
-end
 
 
 class TestRequests < Test::Unit::TestCase
@@ -149,6 +150,10 @@ class TestRequests < Test::Unit::TestCase
 
     puts "done test_04_can_tag_a_muffin_to_another"
   end
+
+#=================================================
+# for test binary upload. here's the contents of 4x4.png
+#  "\x89PNG\r\n\x1A\n\x00\x00\x00\rIHDR\x00\x00\x00\x04\x00\x00\x00\x04\b\x06\x00\x00\x00\xA9\xF1\x9E~\x00\x00\x00AIDAT\b\x1Dc\xFC\xF7k\xE6\x7F\x06(x\xFB\xFE3\x03\x13\x8Cs\xE2\xF4]\x06K\x9B.\x06\x86sg\xAA\xFF\xC7\xC6X\xFEgcc\xFB?{\xF6\xEC\xFF\fll\xAC\xFF\xAB\xAB+\xFF?\x7F\xFE\xFC?\b\x00\x006s\x1D\xE6\xA6\xDB\f]\x00\x00\x00\x00IEND\xAEB`\x82"
 
 end
 

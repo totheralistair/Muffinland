@@ -11,24 +11,54 @@
 
 <hr />
 
-Welcome to Muffinland. Nothing with the name <%= mlResult[:requested_name]%>.
+Welcome to Muffinland. Nothing with the name .<%= mlResult[:requested_name]%>.
+
+
+<hr />
+<p>Go ahead and add a muffin by text:  </p>
+<form method="post" action="">
+  <input type="text" name="MuffinContents" value="" >
+  <br />  <input type="submit" name="Add" value="Add">
+</form>
+<p>or by file:  </p>
+<form method="post" action=""
+      enctype="multipart/form-data">
+  <label for="file">Filename:</label>
+  <input type="file" name="file" id="file"><br>
+  <input type="submit" name="Upload" value="Upload">
+</form>
+<hr />
+
+
+<form method="post" action="">
+  <p>Or change page number
+    <input type="number" name="MuffinNumber" min="0" max="20000" value="-1"    >
+    to contain:
+    <input type="text" name="MuffinContents" value="" >
+    <br />  <input type="submit" name="Change" value="Change">
+  </p>
+</form>
+
+<form method="post" action="">
+  <p>Or tag page number
+    <input type="number" name="MuffinNumber" min="0" max="20000" value="-1"    >
+    to be associated with this page:
+    <input type="number" name="CollectorNumber" min="0" max="20000" value="-1"    >
+    <br />  <input type="submit" name="Tag" value="Tag">
+  </p>
+</form>
+
+
+
+
+
 
 
 <hr />
 
-
-
-
-<form method="post" action="">
-  <p>Add something if you like:
-    <input type="text" name="MuffinContents" value="" >
-    <input type="submit" name="Add" value="Add"></p>
-</form>
-
-
 The Muffins:
 <% mlResult[:dangerously_all_muffins_raw].each_with_index { |value, index | %>
-    <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value %> </p>
+    <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value.inspect %> </p>
 <% } %>
 
 <hr />

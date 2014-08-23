@@ -24,6 +24,12 @@ class MuffinTin
     return m
   end
 
+  def add_raw_from_file( content, content_type )  # muffinTin not allowed to know what contents are.
+    m = Muffin.new( next_id, content, content_type )
+    @muffins << m
+    return m
+  end
+
   def dangerously_all_muffins   #yep, dangerous. remove eventually
     @muffins
   end
@@ -58,6 +64,16 @@ class Baker
     m = @muffinTin.add_raw( request.incoming_contents )
     request.record_muffin_id( m.id )  #  Look Out! modify the defining request!!
     #the reason for this is this is the only record of the id of the new muffin
+    return m
+  end
+
+
+  def add_muffin_from_file( request ) # modify the Request!
+    t = request.content_type_of_file_upload
+    c = request.content_of_file_upload
+    @log.info "File uploaded: t,c: #{t.inspect} & #{c.inspect}"
+    m = @muffinTin.add_raw_from_file( c, t )
+    request.record_muffin_id( m.id )
     return m
   end
 
