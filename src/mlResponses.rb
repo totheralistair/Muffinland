@@ -14,9 +14,9 @@ class Muffinland
         :out_action => "404",
         :requested_name => request.name_from_path,
         :dangerously_all_muffins_raw =>
-            @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
+            @theBaker.dangerously_all_muffins.map{|muff|muff.for_viewing},
         :dangerously_all_posts =>
-            @theHistorian.dangerously_all_posts.map{|req|req.inspect}
+            @theHistorian.dangerously_all_posts#.map{|req|req.inspect}
     }
   end
 
@@ -24,12 +24,13 @@ class Muffinland
     mlResponse = {
         :out_action => "GET_named_page",
         :muffin_id => muffin.id,
-        :muffin_body => muffin.raw,
+        :muffin_content_type => muffin.content_type,
+        :muffin_body => muffin.for_viewing,
         :tags => muffin.dangerously_all_tags,
         :dangerously_all_muffins_raw =>
-            @theBaker.dangerously_all_muffins.map{|muff|muff.raw},
+            @theBaker.dangerously_all_muffins.map{|muff|muff.for_viewing},
         :dangerously_all_posts =>
-            @theHistorian.dangerously_all_posts.map{|req|req.inspect}
+            @theHistorian.dangerously_all_posts#.map{|req|req.inspect}
     }
   end
 

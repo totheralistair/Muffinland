@@ -21,8 +21,6 @@ class Muffinland_via_rack
     request = Ml_RackRequest.new( Rack::Request.new(env) ) # hide the 'Rack'ness
     mlResult = @ml.handle( request )
 
-    @log.info("mlResult:" + mlResult.inspect)
-
     template_fn = @viewsFolder + mlResult[:out_action] + ".erb"
     page = htmlpage_from_templatefile( template_fn , binding )
 

@@ -1,5 +1,6 @@
 require 'logger'
 require 'set'
+require 'base64'
 
 
 class MuffinTin
@@ -18,13 +19,7 @@ class MuffinTin
     (id.is_a? Integer) && ( id > -1 ) && ( id < @muffins.size )
   end
 
-  def add_raw( content )  # muffinTin not allowed to know what contents are.
-    m = Muffin.new( next_id, content )
-    @muffins << m
-    return m
-  end
-
-  def add_raw_from_file( content, content_type )  # muffinTin not allowed to know what contents are.
+  def add_raw( content, content_type="text/plain" )  # muffinTin not allowed to know what contents are.
     m = Muffin.new( next_id, content, content_type )
     @muffins << m
     return m
@@ -60,7 +55,7 @@ class Baker
   end
 
 
-  def add_muffin( request ) # modify the Request!
+  def add_muffin_from_text( request ) # modify the Request!
     m = @muffinTin.add_raw( request.incoming_contents )
     request.record_muffin_id( m.id )  #  Look Out! modify the defining request!!
     #the reason for this is this is the only record of the id of the new muffin
@@ -69,12 +64,11 @@ class Baker
 
 
   def add_muffin_from_file( request ) # modify the Request!
-    t = request.content_type_of_file_upload
     c = request.content_of_file_upload
-    @log.info "File uploaded: t,c: #{t.inspect} & #{c.inspect}"
-    m = @muffinTin.add_raw_from_file( c, t )
+    t = request.content_type_of_file_upload
+    m = @muffinTin.add_raw( c, t )
     request.record_muffin_id( m.id )
-    return m
+    m
   end
 
 
@@ -84,6 +78,15 @@ class Baker
     m.new_contents( request.incoming_contents )
     m
   end
+
+  def change_muffin_per_request_by_file( request )
+    return nil if !is_legit?( id = request.incoming_muffin_id )
+    m = muffin_at( id )
+    c = request.content_of_file_upload
+    t = request.content_type_of_file_upload
+    m.new_contents( c, t )
+    m
+end
 
 
   def tag_muffin_per_request( request )

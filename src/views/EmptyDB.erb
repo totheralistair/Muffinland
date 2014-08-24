@@ -14,17 +14,17 @@
 Welcome to Muffinland.
 
 <hr />
-  <p>Go ahead and add a muffin by text:  </p>
+<p>Go ahead and add something new, either by text or uploading a file:  </p>
+
 <form method="post" action="">
-    <input type="text" name="MuffinContents" value="" >
-    <br />  <input type="submit" name="Add" value="Add">
+  <input type="submit" name="Add" value="Add">
+  text <input type="text" name="MuffinContents" value="" >
 </form>
-<p>or by file:  </p>
+
 <form method="post" action=""
       enctype="multipart/form-data">
-  <label for="file">Filename:</label>
-  <input type="file" name="file" id="file"><br>
   <input type="submit" name="Upload" value="Upload">
+  <input type="file" name="file" id="file">
 </form>
 <hr />
 

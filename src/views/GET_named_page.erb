@@ -11,7 +11,7 @@
 <p> Page <%= mlResult[:muffin_id] %> is:
   <br />
 
-    <%= mlResult[:muffin_body].inspect %>
+    <%= mlResult[:muffin_body] %>
 
     <br />
         <% if mlResult[:tags].size > 0 then %>
@@ -21,41 +21,48 @@
     <% end %>
 </p>
 
-
 <hr />
-<p>Go ahead and add a muffin by text:  </p>
+<p>Go ahead and change this one, either by text or uploading a file:  </p>
 <form method="post" action="">
-  <input type="text" name="MuffinContents" value="" >
-  <br />  <input type="submit" name="Add" value="Add">
+  <input type="number" name="MuffinNumber" min="<%= mlResult[:muffin_id] %>" max="<%= mlResult[:muffin_id] %>" value="<%= mlResult[:muffin_id] %>" >
+  <input type="submit" name="Change" value="Change">
+  to <input type="text" name="MuffinContents" value="" >
 </form>
-<p>or by file:  </p>
+
 <form method="post" action=""
       enctype="multipart/form-data">
-  <label for="file">Filename:</label>
-  <input type="file" name="file" id="file"><br>
+  <input type="number" name="MuffinNumber" min="<%= mlResult[:muffin_id] %>" max="<%= mlResult[:muffin_id] %>" value="<%= mlResult[:muffin_id] %>" >
+  <input type="submit" name="ChangeByFile" value="ChangeByFile">
+  from <input type="file" name="file" id="file"><br>
+</form>
+
+
+<hr />
+
+<p>Or add something new, either by text or uploading a file:  </p>
+
+<form method="post" action="">
+  <input type="submit" name="Add" value="Add">
+  text <input type="text" name="MuffinContents" value="" >
+</form>
+
+<form method="post" action=""
+      enctype="multipart/form-data">
   <input type="submit" name="Upload" value="Upload">
+  <input type="file" name="file" id="file">
 </form>
 <hr />
 
 
-<form method="post" action="">
-  <p>Or change page number
-    <input type="number" name="MuffinNumber" min="0" max="20000" value="-1"    >
-    to contain:
-    <input type="text" name="MuffinContents" value="" >
-    <br />  <input type="submit" name="Change" value="Change">
-  </p>
-</form>
 
 <form method="post" action="">
   <p>Or tag page number
+    <input type="submit" name="Tag" value="Tag">
     <input type="number" name="MuffinNumber" min="0" max="20000" value="-1"    >
     to be associated with this page:
     <input type="number" name="CollectorNumber" min="0" max="20000" value="-1"    >
-    <br />  <input type="submit" name="Tag" value="Tag">
   </p>
 </form>
-
 
 
 
@@ -67,15 +74,17 @@
 
 The Muffins:
 <% mlResult[:dangerously_all_muffins_raw].each_with_index { |value, index | %>
-    <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value.inspect %> </p>
+    <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value %> </p>
 <% } %>
 
+
+<!--
 <hr />
-The Requests as they arrived:
+The Posts as they arrived:
 <% mlResult[:dangerously_all_posts].each_with_index { |value, index | %>
-    <p> request:<%= index %> was <%= value %> </p>
+    <p> request:<%= index %> was <%= value.inspect %> </p>
 <% } %>
-
+-->
 
 
 </body>

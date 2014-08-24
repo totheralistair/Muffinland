@@ -18,7 +18,8 @@ end
 #=== different ways of driving the app ======================
 def request_via_API( app, method, path, params={} ) # app should be Muffinland (hexagon API)
   env = Rack::MockRequest.env_for(path, {:method => method, :params=>params, } )
-  request = Ml_RackRequest.new( Rack::Request.new(env) )
+  request = Ml_RackRequest.new(
+      Rack::Request.new(env) )
   app.handle request                               #this goes straight to the app API
 end
 
