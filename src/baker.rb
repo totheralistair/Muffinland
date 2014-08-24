@@ -64,6 +64,7 @@ class Baker
 
 
   def add_muffin_from_file( request ) # modify the Request!
+    return nil if ! request.has_legit_file?
     c = request.content_of_file_upload
     t = request.content_type_of_file_upload
     m = @muffinTin.add_raw( c, t )
@@ -80,7 +81,9 @@ class Baker
   end
 
   def change_muffin_per_request_by_file( request )
-    return nil if !is_legit?( id = request.incoming_muffin_id )
+    id = request.incoming_muffin_id
+    return nil if !is_legit?( id )
+    return nil if ! request.has_legit_file?
     m = muffin_at( id )
     c = request.content_of_file_upload
     t = request.content_type_of_file_upload

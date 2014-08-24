@@ -43,7 +43,7 @@ end
 class TestRequests < Test::Unit::TestCase
 #=================================================
   def test_00_emptyDB_is_special_case
-    puts "starting test_00_emptyDB"
+    puts "test_00_emptyDB starting..."
     app = Muffinland.new
 
     mlResponse = request_via_API( app, "GET", '/' )
@@ -54,13 +54,13 @@ class TestRequests < Test::Unit::TestCase
     exp =  {:out_action=>"EmptyDB"}
     mlResponse.extract_per( exp ).should == exp
 
-    puts "done test_00_emptyDB"
+    puts "test_00_emptyDB done"
   end
 
 
 #=================================================
   def test_01_posts_return_contents
-    puts "starting test_01_posts"
+    puts "test_01_posts starting..."
     app = Muffinland.new
 
     mlResponse = request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
@@ -80,13 +80,13 @@ class TestRequests < Test::Unit::TestCase
     }
     mlResponse.extract_per( exp ).should == exp
 
-    puts "done test_01_posts"
+    puts "test_01_posts done"
   end
 
 
 #=================================================
   def test_02_can_post_and_get_even_404
-    puts "starting test_02_postAndGet"
+    puts "test_02_postAndGet starting..."
     app = Muffinland.new
 
     request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
@@ -110,12 +110,12 @@ class TestRequests < Test::Unit::TestCase
     }
     mlResponse.extract_per( exp ).should == exp
 
-    puts "done test_02_postAndGet"
+    puts "test_02_postAndGet done"
   end
 
 #=================================================
   def test_03_can_change_a_muffin
-    puts "starting test_03_can_change_a_muffin"
+    puts "test_03_can_change_a_muffin starting..."
     app = Muffinland.new
 
     request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
@@ -128,13 +128,13 @@ class TestRequests < Test::Unit::TestCase
     }
     mlResponse.extract_per( exp ).should == exp
 
-    puts "done test_03_can_change_a_muffin"
+    puts "test_03_can_change_a_muffin done"
   end
 
 
 #=================================================
   def test_04_can_tag_a_muffin_to_another
-    puts "starting test_04_can_tag_a_muffin_to_another"
+    puts "test_04_can_tag_a_muffin_to_another starting..."
     app = Muffinland.new
 
     request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
@@ -149,7 +149,7 @@ class TestRequests < Test::Unit::TestCase
     }
     mlResponse.extract_per( exp ).should == exp
 
-    puts "done test_04_can_tag_a_muffin_to_another"
+    puts "test_04_can_tag_a_muffin_to_another done"
   end
 
 #=================================================

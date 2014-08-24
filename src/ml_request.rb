@@ -32,13 +32,13 @@ class Ml_RackRequest < Ml_request
   end
 
 
-  def is_get?; @myRequest.get? ;  end
-  def is_post?; @myRequest.post? || @myRequest.path=="/post"            ; end
-  def is_Add_command?    ;  @params.has_key?("Add")    ; end
-  def is_Change_command? ;  @params.has_key?("Change") ; end
-  def is_Tag_command?    ;  @params.has_key?("Tag")    ; end
-  def is_Upload_command?    ;  @params.has_key?("Upload")    ; end
-  def is_ChangeByFile_command?    ;  @params.has_key?("ChangeByFile")    ; end
+  def get?; @myRequest.get? ;  end
+  def post?; @myRequest.post? || @myRequest.path=="/post"            ; end
+  def add?;  @params.has_key?("Add")    ; end
+  def change?;  @params.has_key?("Change") ; end
+  def tag?;  @params.has_key?("Tag")    ; end
+  def adddByFile?;  @params.has_key?("Upload")    ; end
+  def changeByFile?;  @params.has_key?("ChangeByFile")    ; end
 
   def name_from_path ;  @myRequest.path[ 1..@myRequest.path.size ] ;  end
   def id_from_path ;  id_from_name( name_from_path )     ;  end
@@ -48,14 +48,9 @@ class Ml_RackRequest < Ml_request
   def incoming_collector_id;  id_from_name( incoming_collector_name ) ;  end
   def incoming_contents;  @params["MuffinContents"] ;  end
 
-  def content_type_of_file_upload;
-    @params["file"][:type]
-  end
-
-  def content_of_file_upload;
-    fn = @params["file"][:tempfile].path
-    IO.binread(fn)
-  end
+  def has_legit_file? ;  @params.has_key?("file") && @params["file"].has_key?(:tempfile) ; end
+  def content_type_of_file_upload ; @params["file"][:type] ; end
+  def content_of_file_upload ;  IO.binread( @params["file"][:tempfile].path ) ; end
 
   # Record Muffinland sh!t in the request
 

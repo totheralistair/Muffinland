@@ -28,11 +28,10 @@ class Muffinland
     request.record_arrival_time
     mlResponse =
         case
-          when request.is_get? then handle_get_muffin(request)
-          when request.is_post? then handle_post(request)
+          when request.get? then handle_get_muffin(request)
+          when request.post? then handle_post(request)
         end
     request.record_completion_time
-    puts "Elapsed time:#{request.execution_time}"
     mlResponse
   end
 
@@ -56,12 +55,12 @@ class Muffinland
   def handle_post( request )
     @theHistorian.add_request( request )
     mlResponse = case
-                   when request.is_Add_command?    then  handle_add_muffin(request)
-                   when request.is_Upload_command? then  handle_upload_file(request)
-                   when request.is_Change_command? then  handle_change_muffin(request)
-                   when request.is_ChangeByFile_command?    then  handle_change_by_file(request)
-                   when request.is_Tag_command?    then  handle_tag_muffin(request)
-                 else                          handle_unknown_post(request)
+                   when request.add?        then  handle_add_muffin(request)
+                   when request.adddByFile? then  handle_add_by_file(request)
+                   when request.change?     then  handle_change_muffin(request)
+                   when request.changeByFile? then  handle_change_by_file(request)
+                   when request.tag?        then  handle_tag_muffin(request)
+                 else                            handle_unknown_post(request)
                end
   end
 
@@ -72,12 +71,14 @@ class Muffinland
 
   def handle_add_muffin( request )
     m = @theBaker.add_muffin_from_text(request)
-    mlResponse_for_GET_muffin( m )
+    m ? mlResponse_for_GET_muffin( m ) :
+        mlResponse_for_404_basic( request )
   end
 
-  def handle_upload_file( request )   # scratchy functions, largely breaking other things
+  def handle_add_by_file( request )   # scratchy functions, largely breaking other things
     m = @theBaker.add_muffin_from_file(request)
-    mlResponse_for_GET_muffin( m )
+    m ? mlResponse_for_GET_muffin( m ) :
+        mlResponse_for_404_basic( request )
   end
 
   def handle_change_muffin( request )
@@ -90,7 +91,6 @@ class Muffinland
     m = @theBaker.change_muffin_per_request_by_file( request )
     m ? mlResponse_for_GET_muffin( m ) :
         mlResponse_for_404_basic( request )
-
   end
 
   def handle_tag_muffin( request )
