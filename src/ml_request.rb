@@ -54,23 +54,16 @@ class Ml_RackRequest < Ml_request
   def incoming_contents;  theParams["MuffinContents"] ;  end
 
   def has_legit_file? ;
-    puts "theParams:#{theParams}"
-    return false if !theParams.has_key?("file")
-    #   theParams["file"].has_key?(:tempfile)
-    true
+   theParams["file"].has_key?(:tempfile)
   end
+
   def content_type_of_file_upload ;
-    puts "heads up"
-    puts @myRequest.POST.inspect
-    @myRequest.POST["fileupload"][:type]
-    #theParams["file"][:type] ;
+    theParams["file"][:type] ;
   end
   def content_of_file_upload ;
-    puts "theParams" + theParams.inspect
-    puts "theParams['file']" + theParams["file"].inspect ;
     c = theParams["input"] if theParams.has_key?("input")
     c = IO.binread( theParams["file"][:tempfile].path ) if
-        theParams.has_key?("file") &&
+        theParams.has_key?("file") and
             theParams["file"].has_key?(:tempfile)
     c
   end
