@@ -29,6 +29,11 @@ class MuffinTin
     @muffins
   end
 
+  def dangerously_all_collection_muffins   #yep, dangerous. remove eventually
+    s = @muffins.select{ |m| m.collection?}
+    s
+  end
+
 end
 
 #===== class Baker ==============
@@ -47,6 +52,10 @@ class Baker
 
   def dangerously_all_muffins   #yep, dangerous. remove eventually
     @muffinTin.dangerously_all_muffins
+  end
+
+  def dangerously_all_collection_muffins   #yep, dangerous. remove eventually
+    @muffinTin.dangerously_all_collection_muffins
   end
 
   def muffin_at_GET_request( request )

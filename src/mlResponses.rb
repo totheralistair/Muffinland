@@ -28,6 +28,8 @@ class Muffinland
         :muffin_body => muffin.for_viewing,
         :muffin_is_collection => muffin.collection?,
         :tags => muffin.dangerously_all_tags,
+        :dangerously_all_collection_muffins =>
+            @theBaker.dangerously_all_collection_muffins.map{|muff|muff.id},
         :dangerously_all_muffins_raw =>
             @theBaker.dangerously_all_muffins.map{|muff|muff.for_viewing},
         :dangerously_all_posts =>

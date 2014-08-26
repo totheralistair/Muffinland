@@ -16,6 +16,11 @@
   <br />
     (This is a collection item: <%= mlResult[:muffin_is_collection] %>)
   <br />
+  All collection items:
+  <% mlResult[:dangerously_all_collection_muffins].each {|id|  %>
+      <a href="<%= id %>">Page <%= id %> </a>,
+  <% } %>
+
   <br />
         <% if mlResult[:tags].size > 0 then %>
         Collected in collections <% mlResult[:tags].each {|tag|  %>
