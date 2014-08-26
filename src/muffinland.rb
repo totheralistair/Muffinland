@@ -3,7 +3,7 @@
 # ideas: email, DTO test,
 
 require 'logger'
-require_relative '../src/mlResponses' # the API output defined for Muffinland
+require_relative '../src/ml_responses' # the API output defined for Muffinland
 require_relative '../src/baker'
 require_relative '../src/muffin'
 require_relative '../src/historian'
@@ -44,7 +44,7 @@ class Muffinland
     mlResponse =
         case
           when @theHistorian.no_history_to_report?
-            mlResponse_for_EmptyDB
+            ml_response_for_EmptyDB
           when m
             mlResponse_for_GET_muffin( m )
           else
@@ -61,6 +61,9 @@ class Muffinland
                    when request.change?     then  handle_change_muffin(request)
                    when request.changeByFile? then  handle_change_by_file(request)
                    when request.tag?        then  handle_tag_muffin(request)
+                   when request.makeCollection?        then  handle_makeCollection(request)
+                   when request.makeNonCollection?        then  handle_makeNonCollection(request)
+
                  else                            handle_unknown_post(request)
                end
   end
@@ -72,6 +75,18 @@ class Muffinland
 
   def handle_add_muffin( request )
     m = @theBaker.add_muffin_from_text(request)
+    m ? mlResponse_for_GET_muffin( m ) :
+        mlResponse_for_404_basic( request )
+  end
+
+  def handle_makeCollection( request )
+    m = @theBaker.make_collection(request)
+    m ? mlResponse_for_GET_muffin( m ) :
+        mlResponse_for_404_basic( request )
+  end
+
+  def handle_makeNonCollection( request )
+    m = @theBaker.make_noncollection(request)
     m ? mlResponse_for_GET_muffin( m ) :
         mlResponse_for_404_basic( request )
   end

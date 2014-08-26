@@ -40,6 +40,8 @@ class Ml_RackRequest < Ml_request
   def tag?;  theParams.has_key?("Tag")    ; end
   def adddByFile?;  theParams.has_key?("Upload")    ; end
   def changeByFile?;  theParams.has_key?("ChangeByFile")    ; end
+  def makeCollection?;  theParams.has_key?("Make Collection")    ; end
+  def makeNonCollection?;  theParams.has_key?("Make Non-Collection")    ; end
 
   def make_collection? ;  theParams.has_key?("Collection") ? theParams["Collection"] : false ; end
 

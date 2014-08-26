@@ -29,10 +29,13 @@ class MuffinTin
     @muffins
   end
 
-  def dangerously_all_collection_muffins   #yep, dangerous. remove eventually
+  def all_collection_muffin_ids #not dangerous
     s = @muffins.select{ |m| m.collection?}
-    s
+    i = s.collect{ |m| m.id }
+    i
   end
+
+
 
 end
 
@@ -54,8 +57,8 @@ class Baker
     @muffinTin.dangerously_all_muffins
   end
 
-  def dangerously_all_collection_muffins   #yep, dangerous. remove eventually
-    @muffinTin.dangerously_all_collection_muffins
+  def all_collection_muffin_ids #not dangerous
+    @muffinTin.all_collection_muffin_ids
   end
 
   def muffin_at_GET_request( request )
@@ -66,10 +69,24 @@ class Baker
 
   def add_muffin_from_text( request ) # modify the Request!
     m = @muffinTin.add_raw( request.incoming_contents )
-    m.make_collection( request.make_collection? )
     request.record_muffin_id( m.id )
     return m
   end
+
+  def make_collection( request )
+    return nil unless is_legit?( id = request.incoming_muffin_id )
+    m = muffin_at( id )
+    m.make_collection
+    m
+  end
+
+  def make_noncollection( request )
+    return nil unless is_legit?( id = request.incoming_muffin_id )
+    m = muffin_at( id )
+    m.make_noncollection
+    m
+  end
+
 
 
   def add_muffin_from_file( request ) # modify the Request!
@@ -98,10 +115,11 @@ end
 
   def tag_muffin_per_request( request )
     return nil if !is_legit?( id = request.incoming_muffin_id )
-    collector_id = request.incoming_collector_id
-    return nil if !is_legit?( collector_id )
+    c_id = request.incoming_collector_id
+    return nil if !is_legit?( c_id )
     m = muffin_at( id )
-    m.add_tag( collector_id )
+    c = muffin_at( c_id )
+    m.add_to_collection( c ) ;
     m
   end
 
