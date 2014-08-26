@@ -8,6 +8,7 @@ class Muffin
   def initialize( id, raw_contents, content_type="text/plain")
     @myID = id
     @myTags = Set.new
+    @isCollection = false
     new_contents( raw_contents, content_type )
   end
 
@@ -15,6 +16,8 @@ class Muffin
   def raw ;  @myRaw ;  end
   def content_type ;  @myContent_type ;  end
   def add_tag(t) ;  @myTags << t;  self ; end
+  def make_collection( yes ) ;  yes ? @isCollection=true : @isCollection=false ;  end
+  def collection? ; @isCollection ; end
   def dangerously_all_tags ;  @myTags ;  end  # yes, dangerous. remove one day?
 
 

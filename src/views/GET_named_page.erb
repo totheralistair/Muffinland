@@ -13,9 +13,12 @@
 
     <%= mlResult[:muffin_body] %>
 
-    <br />
+  <br />
+    (This is a collection item: <%= mlResult[:muffin_is_collection] %>)
+  <br />
+  <br />
         <% if mlResult[:tags].size > 0 then %>
-        tagged to <% mlResult[:tags].each {|tag|  %>
+        Collected in collections <% mlResult[:tags].each {|tag|  %>
             <a href="<%= tag %>">Page <%= tag %> </a>,
       <% } %>
     <% end %>
@@ -27,6 +30,7 @@
   <input type="number" name="MuffinNumber" min="<%= mlResult[:muffin_id] %>" max="<%= mlResult[:muffin_id] %>" value="<%= mlResult[:muffin_id] %>" >
   <input type="submit" name="Change" value="Change">
   to <input type="text" name="MuffinContents" value="" >
+  <br />p.s. Make this a Collection item? <input type="checkbox" name="Collection" value="Collection">
 </form>
 
 <form method="post" action=""
@@ -34,6 +38,7 @@
   <input type="number" name="MuffinNumber" min="<%= mlResult[:muffin_id] %>" max="<%= mlResult[:muffin_id] %>" value="<%= mlResult[:muffin_id] %>" >
   <input type="submit" name="ChangeByFile" value="ChangeByFile">
   from <input type="file" name="file" id="file"><br>
+  <br />p.s. Make this a Collection item? <input type="checkbox" name="Collection" value="Collection">
 </form>
 
 
@@ -44,12 +49,14 @@
 <form method="post" action="">
   <input type="submit" name="Add" value="Add">
   text <input type="text" name="MuffinContents" value="" >
+  <br />p.s. Make this a Collection item? <input type="checkbox" name="Collection" value="Collection">
 </form>
 
 <form method="post" action=""
       enctype="multipart/form-data">
   <input type="submit" name="Upload" value="Upload">
   <input type="file" name="file" id="file">
+  <br />p.s. Make this a Collection item? <input type="checkbox" name="Collection" value="Collection">
 </form>
 <hr />
 

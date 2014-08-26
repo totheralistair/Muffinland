@@ -57,17 +57,15 @@ class Baker
 
   def add_muffin_from_text( request ) # modify the Request!
     m = @muffinTin.add_raw( request.incoming_contents )
-    request.record_muffin_id( m.id )  #  Look Out! modify the defining request!!
-    #the reason for this is this is the only record of the id of the new muffin
+    m.make_collection( request.make_collection? )
+    request.record_muffin_id( m.id )
     return m
   end
 
 
   def add_muffin_from_file( request ) # modify the Request!
-    return nil if ! request.has_legit_file?
-    c = request.content_of_file_upload
-    t = request.content_type_of_file_upload
-    m = @muffinTin.add_raw( c, t )
+    return nil if !( c = request.content_of_file_upload )
+    m = @muffinTin.add_raw( c, request.content_type_of_file_upload )
     request.record_muffin_id( m.id )
     m
   end
@@ -81,13 +79,10 @@ class Baker
   end
 
   def change_muffin_per_request_by_file( request )
-    id = request.incoming_muffin_id
-    return nil if !is_legit?( id )
     return nil if ! request.has_legit_file?
+    return nil if !is_legit?( id = request.incoming_muffin_id )
     m = muffin_at( id )
-    c = request.content_of_file_upload
-    t = request.content_type_of_file_upload
-    m.new_contents( c, t )
+    m.new_contents( request.content_of_file_upload, request.content_type_of_file_upload )
     m
 end
 

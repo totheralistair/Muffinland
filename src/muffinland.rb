@@ -25,6 +25,7 @@ class Muffinland
 # output: a hash with all the data produced for consumption
 
   def handle( request ) # note: all 'handle's return 'mlResponse' in a chain
+
     request.record_arrival_time
     mlResponse =
         case

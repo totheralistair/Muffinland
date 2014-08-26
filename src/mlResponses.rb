@@ -26,6 +26,7 @@ class Muffinland
         :muffin_id => muffin.id,
         :muffin_content_type => muffin.content_type,
         :muffin_body => muffin.for_viewing,
+        :muffin_is_collection => muffin.collection?,
         :tags => muffin.dangerously_all_tags,
         :dangerously_all_muffins_raw =>
             @theBaker.dangerously_all_muffins.map{|muff|muff.for_viewing},
