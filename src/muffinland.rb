@@ -54,7 +54,6 @@ class Muffinland
 
 
   def handle_post( request )
-    puts "in handle post:" + request.inspect
     @theHistorian.add_request( request )
     ml_response = case
                    when request.add?        then  handle_add_muffin(request)

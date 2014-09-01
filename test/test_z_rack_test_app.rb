@@ -5,13 +5,7 @@ require 'rspec/expectations'
 #require 'URI'
 require_relative '../src/z_rack_test_app'
 
-# def request_via_API app, method, path, params={}
-#   env = Rack::MockRequest.env_for path, method: method, params: params
-#   app.call env
-# end
 class TestRequests < Test::Unit::TestCase
-
-
 
   #===============================
   def test_00_can_upload_ascii_file_via_rack
@@ -63,95 +57,11 @@ class TestRequests < Test::Unit::TestCase
 
 
 
-=begin
-  def alistairs_env_for(uri="", opts={})
-
-    # uri = URI(uri)
-    # uri.path = "/#{uri.path}" unless uri.path[0] == ?/
-    #
-    env = {
-        "rack.version" => Rack::VERSION,
-        "rack.input" => StringIO.new,
-        "rack.errors" => StringIO.new,
-        "rack.multithread" => true,
-        "rack.multiprocess" => true,
-        "rack.run_once" => false,
-    }
-
-    env["REQUEST_METHOD"] = opts[:method] ? opts[:method].to_s.upcase : "GET"
-    # env["SERVER_NAME"] = uri.host || "example.org"
-    # env["SERVER_PORT"] = uri.port ? uri.port.to_s : "80"
-    # env["QUERY_STRING"] = uri.query.to_s
-    # env["PATH_INFO"] = (!uri.path || uri.path.empty?) ? "/" : uri.path
-    # env["rack.url_scheme"] = uri.scheme || "http"
-    # env["HTTPS"] = env["rack.url_scheme"] == "https" ? "on" : "off"
-    #
-    # env["SCRIPT_NAME"] = opts[:script_name] || ""
-    #
-    # if opts[:fatal]
-    #   env["rack.errors"] = FatalWarner.new
-    # else
-    #   env["rack.errors"] = StringIO.new
-    # end
-
-    puts "env-1:" + env.inspect
-
-    if params = opts[:params]
-      if env["REQUEST_METHOD"] == "GET"
-        params = Utils.parse_nested_query(params) if params.is_a?(String)
-        params.update(Utils.parse_nested_query(env["QUERY_STRING"]))
-        env["QUERY_STRING"] = Utils.build_nested_query(params)
-        puts "env-2a:" + env.inspect
-      elsif !opts.has_key?(:input)
-        opts["CONTENT_TYPE"] = "application/x-www-form-urlencoded"
-        if params.is_a?(Hash)
-          if data = Utils::Multipart.build_multipart(params)
-            opts[:input] = data
-            opts["CONTENT_LENGTH"] ||= data.length.to_s
-            opts["CONTENT_TYPE"] = "multipart/form-data; boundary=#{Utils::Multipart::MULTIPART_BOUNDARY}"
-            puts "env-2b:" + env.inspect
-          else
-            opts[:input] = Utils.build_nested_query(params)
-            puts "env-2c:" + env.inspect
-          end
-        else
-          opts[:input] = params
-          puts "env-2d:" + env.inspect
-        end
-      end
-    end
-    puts "env-3:" + env.inspect
-    empty_str = ""
-    empty_str.force_encoding("ASCII-8BIT") if empty_str.respond_to? :force_encoding
-    opts[:input] ||= empty_str
-    if String === opts[:input]
-      rack_input = StringIO.new(opts[:input])
-    else
-      rack_input = opts[:input]
-    end
-    puts "env-4:" + env.inspect
-
-    rack_input.set_encoding(Encoding::BINARY) if rack_input.respond_to?(:set_encoding)
-    env['rack.input'] = rack_input
-
-    env["CONTENT_LENGTH"] ||= env["rack.input"].length.to_s
-
-    opts.each { |field, value|
-      env[field] = value  if String === field
-    }
-    puts "env-4:" + env.inspect
-
-    env
-  end
-=end
-
-
-
 
   #===============================
   def dont_test_02_can_upload_binary_value_via_rack
-    puts "\n...starting test_02_can_upload_binary_value_via_rack"
     #this is still a nul test, doesn't actually test anything about uploads
+    puts "\n...starting test_02_can_upload_binary_value_via_rack"
 
     input = <<EOF
 --AaB03x\r

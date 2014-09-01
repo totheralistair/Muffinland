@@ -13,12 +13,12 @@
 </p>
 
 <p>
-  <% if mlResult[:belongs_to_collections].size == 0 then %>
-      It has not been put into any collections.
+  <% if mlResult[:belongs_to_ids].size == 0 then %>
+      This has not been put into any collections.
   <% end %>
-  <% if mlResult[:belongs_to_collections].size > 0 then %>
+  <% if mlResult[:belongs_to_ids].size > 0 then %>
       This muffin belongs in collections
-      <% mlResult[:belongs_to_collections].each {|tag|  %>
+      <% mlResult[:belongs_to_ids].each {|tag|  %>
           <a href="<%= tag %>">Page <%= tag %> </a>,
       <% } %>
   <% end %>
@@ -29,7 +29,7 @@
     This is not a collection muffin.
   <% else %>
       This is a collection muffin. It collects:
-      <% mlResult[:all_muffins_collected_ids].each {|id|  %>
+      <% mlResult[:muffin_collects].each {|id|  %>
           <a href="<%= id %>">Page <%= id %> </a>,
       <% } %>
   <% end %>
@@ -65,13 +65,13 @@
 
 <br />
 
-<% mlResult[:all_collection_muffin_ids].each {|id|  %>
+<% mlResult[:all_collections_just_ids].each {|id|  %>
     <form method="post" action="">
       Add
       <input type="number" name="MuffinNumber" min="<%= mlResult[:muffin_id] %>" max="<%= mlResult[:muffin_id] %>" value="<%= mlResult[:muffin_id] %>" >
       to collection
       <input type="number" name="CollectorNumber" min="<%= id %>" max="<%= id %>" value="<%= id %>" >
-      <input type="submit" name="Tag" value="Tag">
+      <input type="submit" name="Tag" value="Tag It">
     </form>
 <% } %>
 

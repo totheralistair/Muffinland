@@ -26,11 +26,11 @@ class Muffinland
         :muffin_id => muffin.id,
         :muffin_content_type => muffin.content_type,
         :muffin_body => muffin.for_viewing,
-        :belongs_to_collections => muffin.belongs_to_collections_ids,
         :muffin_is_collection => muffin.collection?,
-        :all_muffins_collected_ids => muffin.all_collected_muffins_ids,
-        :all_collection_muffin_ids =>
-            @theBaker.all_collection_muffin_ids,
+        :muffin_collects => muffin.collects_ids,
+        :belongs_to_ids => muffin.belongs_to_ids,
+        :all_collections_just_ids =>
+            @theBaker.all_collections_just_ids,
         :dangerously_all_muffins_raw =>
             @theBaker.dangerously_all_muffins.map{|muff|muff.for_viewing},
 #        :dangerously_all_posts =>

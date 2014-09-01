@@ -29,7 +29,7 @@ class MuffinTin
     @muffins
   end
 
-  def all_collection_muffin_ids #not dangerous
+  def all_collections_just_ids #not dangerous
     s = @muffins.select{ |m| m.collection?}
     i = s.collect{ |m| m.id }
     i
@@ -57,8 +57,8 @@ class Baker
     @muffinTin.dangerously_all_muffins
   end
 
-  def all_collection_muffin_ids #not dangerous
-    @muffinTin.all_collection_muffin_ids
+  def all_collections_just_ids #not dangerous
+    @muffinTin.all_collections_just_ids
   end
 
   def muffin_at_GET_request( request )
@@ -106,10 +106,11 @@ end
 
 
   def tag_muffin_per_request( request )
-    return nil if !is_legit?( id = request.incoming_muffin_id )
+    m_id = request.incoming_muffin_id
     c_id = request.incoming_collector_id
+    return nil if !is_legit?( m_id )
     return nil if !is_legit?( c_id )
-    m = muffin_at( id )
+    m = muffin_at( m_id )
     c = muffin_at( c_id )
     m.add_to_collection( c ) ;
     m
@@ -118,8 +119,6 @@ end
   def add_muffin_from_file( request ) # modify the Request!
     # return nil if !( c = request.content_of_file_upload )
     c, t = multipart_contents_and_type( request )
-    puts c.inspect
-    puts t.inspect
     m = @muffinTin.add_raw( c, t )
     request.record_muffin_id( m.id )
     m
@@ -127,24 +126,13 @@ end
 
 
   def multipart_contents_and_type request # binary and ascii file uploads
-    ; puts "In Multipart Thingy:" + request.inspect
-    env = request.theEnv
-    multipart = Rack::Multipart.parse_multipart env
-    ; puts "In Multipart Thingy:" + multipart.values.inspect
-
+  # NOTE: bad failure for improper hash structure :(
+    multipart = Rack::Multipart.parse_multipart request.theEnv
     file_info = multipart.values.find {|f| f.is_a? Hash and f.key? :tempfile }
-    ; puts "in multipart, file_info=" + file_info.inspect
-
-
     type = file_info[:type]
-    ; puts type
     body = file_info[:tempfile].read
     file_info[:tempfile].close
     file_info[:tempfile].unlink
-    # ['500',
-    #  {'Content-Type' => file_info[:type].to_s,
-    #   'Content-Length' => body.bytesize.to_s},
-    #  [body]]
     [body, type]
   end
 

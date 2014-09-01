@@ -53,9 +53,9 @@ class Ml_RackRequest < Ml_request
   def incoming_collector_id;  id_from_name( incoming_collector_name ) ;  end
   def incoming_contents;  theParams["MuffinContents"] ;  end
 
-  def has_legit_file? ;
-   theParams["file"].has_key?(:tempfile)
-  end
+  # def has_legit_file? ;
+  #  theParams["file"].has_key?(:tempfile)
+  # end
 
   # Record Muffinland sh!t in the request
 
