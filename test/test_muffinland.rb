@@ -102,7 +102,48 @@ class TestRequests < Test::Unit::TestCase
     }
     mlResponse.extract_per( exp ).should == exp
 
-    puts "test_02_postAndGet done"
+    puts "test_02_postAndGet done."
+  end
+
+#=================================================
+  def test_05_can_upload_a_file
+    puts "test_05_can_upload_a_file starting..."
+    app = Muffinland.new
+
+    fn0 = "/Users/alistaircockburn/Desktop/Enviado desde mi iPad.txt"
+    params = {
+        "Upload" => "Upload",
+        description: 'A text file',
+        text_source: Rack::Multipart::UploadedFile.new( fn0 )
+    }
+    mlResponse = request_via_API( app, "POST", '/ignored', params )
+    file_contents_0 = File.read(fn0)
+    exp = {
+        :out_action=> "GET_named_page",
+        :muffin_id => 0 ,
+        :muffin_body => file_contents_0 ,
+        :dangerously_all_muffins_raw => [file_contents_0]
+    }
+    mlResponse.extract_per( exp ).should == exp
+
+    fn1 = "/Users/alistaircockburn/Desktop/2x2.png"
+    params = {
+        "Upload" => "Upload",
+        description: 'A binary file',
+        text_source: Rack::Multipart::UploadedFile.new( fn1, "image/png", binary=true )
+    }
+    mlResponse = request_via_API( app, "POST", '/ignored', params )
+    file_contents_1 = IO.binread('/Users/alistaircockburn/Desktop/2x2.png')
+    html_from_binary_image_1 = '<img src="data:image/png;base64,' + Base64.encode64(file_contents_1) + '" /> '
+    exp = {
+        :out_action=> "GET_named_page",
+        :muffin_id => 1 ,
+        :muffin_body => html_from_binary_image_1,
+        :dangerously_all_muffins_raw => [file_contents_0, html_from_binary_image_1]
+    }
+    mlResponse.extract_per( exp ).should == exp
+
+    puts "test_05_can_upload_a_file done."
   end
 
 #=================================================
@@ -128,7 +169,7 @@ class TestRequests < Test::Unit::TestCase
 
 
 #=================================================
-  def test_04_can_tag_a_muffin_to_another
+  def dont_test_04_can_tag_a_muffin_to_another
     puts "test_04_can_tag_a_muffin_to_another starting..."
     app = Muffinland.new
 
@@ -148,74 +189,6 @@ class TestRequests < Test::Unit::TestCase
   end
 
 #=================================================
-  def test_05_can_upload_file   # sooooo doesn't work......
-    puts "test_05_can_upload_file starting..."
-    app = Muffinland.new
-
-    input = <<EOF
---AaB03x\r
-content-disposition: form-data; name="reply"\r
-\r
-yes\r
---AaB03x\r
-content-disposition: form-data; name="fileupload"; filename="dj.jpg"\r
-Content-Type: image/jpeg\r
-Content-Transfer-Encoding: base64\r
-\r
-/9j/4AAQSkZJRgABAQAAAQABAAD//gA+Q1JFQVRPUjogZ2QtanBlZyB2MS4wICh1c2luZyBJSkcg\r
---AaB03x--\r
-EOF
-
-    req = Rack::Request.new Rack::MockRequest.env_for("/",
-                                                      "CONTENT_TYPE" => "multipart/form-data, boundary=AaB03x",
-                                                      "CONTENT_LENGTH" => input.size,
-                                                      :input => input)
-#    req.POST.should.include "fileupload"
-#    req.POST.should.include "reply"
-
-    puts req.content_length== input.size
-    puts req.media_type== 'multipart/form-data'
-    puts req.media_type_params['boundary']== 'AaB03x'
-
-    puts req.POST
-
-    puts req.POST["reply"]== "yes"
-
-    f = req.POST["fileupload"]
-    puts f[:type]== "image/jpeg"
-    puts f[:filename]== "dj.jpg"
-#    puts f[:tempfile].size.should.equal 76
-
-# req.should.be.form_data
-# req.content_length.should.equal input.size
-# req.media_type.should.equal 'multipart/form-data'
-# req.media_type_params.should.include 'boundary'
-# req.media_type_params['boundary'].should.equal 'AaB03x'
-#
-# req.POST["reply"].should.equal "yes"
-#
-# f = req.POST["fileupload"]
-# f.should.be.kind_of Hash
-# f[:type].should.equal "image/jpeg"
-# f[:filename].should.equal "dj.jpg"
-# f.should.include :tempfile
-# f[:tempfile].size.should.equal 76
-
-    mlRequest = request_via_API( app, "POST", '/ignored',
-                                 "Upload"=>"Upload",
-                                 "CONTENT_TYPE" => "multipart/form-data, boundary=AaB03x",
-                                 "CONTENT_LENGTH" => input.size,
-                                 :input => input)
-    puts "Received mlRequet:#{mlRequest.inspect}"
-
-
-    exp = {
-    :out_action=> "GET_named_page",
-    }
-    exp.should == exp
-
-    puts "test_05_can_upload_file done"
-  end
 
 =begin
     mlRequest = request_via_API( app, "POST", '/ignored',

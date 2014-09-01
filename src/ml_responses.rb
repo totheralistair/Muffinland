@@ -2,15 +2,15 @@
 class Muffinland
 
   def ml_response_for_EmptyDB
-    mlResponse = { :out_action => "EmptyDB" }
+    ml_response = { :out_action => "EmptyDB" }
   end
 
-  def mlResponse_for_UnregisteredCommand
-    mlResponse = { :out_action => "Unregistered Command" }
+  def ml_response_for_UnregisteredCommand
+    ml_response = { :out_action => "Unregistered Command" }
   end
 
-  def mlResponse_for_404_basic( request )
-    mlResponse = {
+  def ml_response_for_404_basic( request )
+    ml_response = {
         :out_action => "404",
         :requested_name => request.name_from_path,
         :dangerously_all_muffins_raw =>
@@ -20,8 +20,8 @@ class Muffinland
     }
   end
 
-  def mlResponse_for_GET_muffin( muffin )
-    mlResponse = {
+  def ml_response_for_GET_muffin( muffin )
+    ml_response = {
         :out_action => "GET_named_page",
         :muffin_id => muffin.id,
         :muffin_content_type => muffin.content_type,

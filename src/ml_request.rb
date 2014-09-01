@@ -57,17 +57,6 @@ class Ml_RackRequest < Ml_request
    theParams["file"].has_key?(:tempfile)
   end
 
-  def content_type_of_file_upload ;
-    theParams["file"][:type] ;
-  end
-  def content_of_file_upload ;
-    c = theParams["input"] if theParams.has_key?("input")
-    c = IO.binread( theParams["file"][:tempfile].path ) if
-        theParams.has_key?("file") and
-            theParams["file"].has_key?(:tempfile)
-    c
-  end
-
   # Record Muffinland sh!t in the request
 
   def record_in_request( tag, valueString ) ;  theMuffinlandTags[tag] = valueString ;  end
@@ -90,10 +79,3 @@ class Ml_RackRequest < Ml_request
 
 end
 
-=begin
-{:filename=>"2x2.png",
-:type=>"image/png",
-:name=>"file",
-:tempfile=>#<Tempfile:/var/folders/2d/9q3nv99167l4w3qwqv8jj8140000gn/T/RackMultipart20140824-29393-17dsv88>,
-  :head=>"Content-Disposition: form-data; name=\"file\"; filename=\"2x2.png\"\r\nContent-Type: image/png\r\n"}
-=end
