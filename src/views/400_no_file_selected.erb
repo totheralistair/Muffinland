@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>
-    New Muffinland
+    Muffinland error 400
   </title>
 </head>
 
@@ -11,10 +11,12 @@
 
 <hr />
 
-Welcome to Muffinland. There is nothing here yet.
+<%= mlResult[:error_message]%>.
+
 
 <hr />
-<p>Go ahead and add something new, either by text or uploading a file:  </p>
+<p>Add something new, either by text or uploading a file:  </p>
+
 
 <form method="post" action="">
   With text: <input type="text" name="MuffinContents" value="" >
@@ -27,6 +29,13 @@ Welcome to Muffinland. There is nothing here yet.
   <input type="submit" name="Upload" value="Add from file">
 </form>
 <hr />
+
+
+The Muffins:
+<% mlResult[:dangerously_all_muffins_for_viewing].each_with_index { |value, index | %>
+    <p> <a href="<%= index %>">Muffin <%= index %> </a>: <%= value %> </p>
+<% } %>
+
 
 
 

@@ -29,12 +29,6 @@ class MuffinTin
     @muffins
   end
 
-  def all_collections_just_ids #not dangerous
-    s = @muffins.select{ |m| m.collection?}
-    i = s.collect{ |m| m.id }
-    i
-  end
-
 
 
 end
@@ -57,13 +51,18 @@ class Baker
     @muffinTin.dangerously_all_muffins
   end
 
-  def all_collections_just_ids #not dangerous
-    @muffinTin.all_collections_just_ids
+  def dangerously_all_muffins_for_viewing   #yep, dangerous. remove eventually
+    views = @muffinTin.dangerously_all_muffins.collect{ |m| m.for_viewing }
   end
 
-  def muffin_at_GET_request( request )
-    id = request.id_from_path   # not sure why Baker knows request from path. suspect
-    muffin_at(id) if is_legit?(id)
+  def all_collections_just_ids #not dangerous
+    collections = @muffinTin.dangerously_all_muffins.select{ |m| m.collection?}
+    ids = collections.collect{ |m| m.id }
+    ids
+  end
+
+  def muffin_at_id( m_id )
+    muffin_at(m_id) if is_legit?(m_id)
   end
 
 
@@ -72,6 +71,15 @@ class Baker
     request.record_muffin_id( m.id )
     return m
   end
+
+  def add_muffin_from_file( request ) # modify the Request!
+    c, t = multipart_contents_and_type( request )
+    return nil unless c && t  #make sure there are contents to add
+    m = @muffinTin.add_raw( c, t )
+    request.record_muffin_id( m.id )
+    m
+  end
+
 
   def make_collection( request )
     return nil unless is_legit?( id = request.incoming_muffin_id )
@@ -89,20 +97,21 @@ class Baker
 
 
 
-  def change_muffin_per_request( request )
+  def change_muffin( request )
     return nil if !is_legit?( id = request.incoming_muffin_id )
     m = muffin_at( id )
     m.new_contents( request.incoming_contents )
     m
   end
 
-  def change_muffin_per_request_by_file( request )
-    return nil if ! request.has_legit_file?
+  def change_muffin_from_file( request )
+    c, t = multipart_contents_and_type( request )
+    return nil unless c && t  #make sure there are contents to add
     return nil if !is_legit?( id = request.incoming_muffin_id )
     m = muffin_at( id )
     m.new_contents( request.content_of_file_upload, request.content_type_of_file_upload )
     m
-end
+  end
 
 
   def tag_muffin_per_request( request )
@@ -116,21 +125,13 @@ end
     m
   end
 
-  def add_muffin_from_file( request ) # modify the Request!
-    # return nil if !( c = request.content_of_file_upload )
-    c, t = multipart_contents_and_type( request )
-    m = @muffinTin.add_raw( c, t )
-    request.record_muffin_id( m.id )
-    m
-  end
-
 
   def multipart_contents_and_type request # binary and ascii file uploads
   # NOTE: bad failure for improper hash structure :(
-    multipart = Rack::Multipart.parse_multipart request.theEnv
-    file_info = multipart.values.find {|f| f.is_a? Hash and f.key? :tempfile }
-    type = file_info[:type]
-    body = file_info[:tempfile].read
+    (multipart = Rack::Multipart.parse_multipart request.theEnv) ? true : return
+    (file_info = multipart.values.find {|f| f.is_a? Hash and f.key? :tempfile }) ? true : return
+    (type = file_info[:type])  ? true : return
+    (body = file_info[:tempfile].read)  ? true : return
     file_info[:tempfile].close
     file_info[:tempfile].unlink
     [body, type]

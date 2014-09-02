@@ -40,7 +40,8 @@ class Muffinland
 #===== The commands to be handled (and the handling)=======
 
   def handle_get_muffin( request )
-    m = @theBaker.muffin_at_GET_request( request )
+    id = request.name_from_path ? request.id_from_path : 0 # default to page zero
+    m = @theBaker.muffin_at_id( id )
     ml_response =
         case
           when @theHistorian.no_history_to_report?
@@ -55,17 +56,23 @@ class Muffinland
 
   def handle_post( request )
     @theHistorian.add_request( request )
-    ml_response = case
-                   when request.add?        then  handle_add_muffin(request)
-                   when request.adddByFile? then  handle_add_by_file(request)
-                   when request.change?     then  handle_change_muffin(request)
-                   when request.changeByFile? then  handle_change_by_file(request)
-                   when request.tag?        then  handle_tag_muffin(request)
-                   when request.makeCollection?        then  handle_makeCollection(request)
-                   when request.makeNonCollection?        then  handle_makeNonCollection(request)
-                   when request.upload?     then handle_add_by_file(request)
-                 else                            handle_unknown_post(request)
-               end
+
+    # there is for sure a way to put all the rest of this file into a lookup table; but I don't know how yet
+    # like { [command, execution method, happy output, failure output ] }
+    # eg { :add [handle_add_muffin(), add_muffin_from_text(), ml_response_for_GET_muffin(), ml_response_for_404_basic()] }
+    # so for now it's just all spelled out longhand.
+
+    ml_response = case request.command
+                    when :add          then  handle_add_muffin(request)
+                    when :addByFile    then  handle_add_by_file(request)
+                    when :change       then  handle_change_muffin(request)
+                    when :changeByFile then  handle_change_by_file(request)
+                    when :tag          then  handle_tag_muffin(request)
+                    when :makeCollection then  handle_makeCollection(request)
+                    when :makeNonCollection then  handle_makeNonCollection(request)
+                    when :upload       then handle_add_by_file(request)
+                    else              handle_unknown_post(request)
+                  end
   end
 
   def handle_unknown_post( request )
@@ -77,6 +84,12 @@ class Muffinland
     m = @theBaker.add_muffin_from_text(request)
     m ? ml_response_for_GET_muffin( m ) :
         ml_response_for_404_basic( request )
+  end
+
+  def handle_add_by_file( request )
+    m = @theBaker.add_muffin_from_file(request)
+    m ? ml_response_for_GET_muffin( m ) :
+        ml_response_for_400_no_file_provided( request )
   end
 
   def handle_makeCollection( request )
@@ -91,22 +104,16 @@ class Muffinland
         ml_response_for_404_basic( request )
   end
 
-  def handle_add_by_file( request )   # scratchy functions, largely breaking other things
-    m = @theBaker.add_muffin_from_file(request)
-    m ? ml_response_for_GET_muffin( m ) :
-        ml_response_for_404_basic( request )
-  end
-
   def handle_change_muffin( request )
-    m = @theBaker.change_muffin_per_request( request )
+    m = @theBaker.change_muffin( request )
     m ? ml_response_for_GET_muffin( m ) :
         ml_response_for_404_basic( request )
   end
 
   def handle_change_by_file( request )
-    m = @theBaker.change_muffin_per_request_by_file( request )
+    m = @theBaker.change_muffin_from_file( request )
     m ? ml_response_for_GET_muffin( m ) :
-        ml_response_for_404_basic( request )
+        ml_response_for_400_no_file_provided( request ) # not strictly correct, i suspect
   end
 
   def handle_tag_muffin( request )

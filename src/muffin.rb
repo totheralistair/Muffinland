@@ -41,9 +41,15 @@ class Muffin
   end
 
   def for_viewing
-    content_type == 'text/plain' ?
-          raw :
-          '<img src="data:image/png;base64,' + Base64.encode64(raw) + '" /> '
+    case
+      when content_type == 'text/plain'
+        raw
+      when content_type == 'image/png' || content_type == 'image/jpg'
+        '<img src="data:image/png;base64,' + Base64.encode64(raw) + '" /> '
+      else
+        "no content, nothing there; content_type=#{content_type.inspect}"
+    end
+
   end
 
 end

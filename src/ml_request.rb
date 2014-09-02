@@ -38,10 +38,23 @@ class Ml_RackRequest < Ml_request
   def add?;  theParams.has_key?("Add")    ; end
   def change?;  theParams.has_key?("Change") ; end
   def tag?;  theParams.has_key?("Tag")    ; end
-  def adddByFile?;  theParams.has_key?("Upload")    ; end
+  def addByFile?;  theParams.has_key?("Upload")    ; end
   def changeByFile?;  theParams.has_key?("ChangeByFile")    ; end
   def makeCollection?;  theParams.has_key?("Make Collection")    ; end
   def makeNonCollection?;  theParams.has_key?("Make Non-Collection")    ; end
+
+  def command
+    case
+      when add?       then :add
+      when change?    then :change
+      when tag?       then :tag
+      when addByFile? then :addByFile
+      when changeByFile?    then :changeByFile
+      when makeCollection?  then :makeCollection
+      when makeNonCollection?  then :makeNonCollection
+        else nil
+    end
+  end
 
   def make_collection? ;  theParams.has_key?("Collection") ? theParams["Collection"] : false ; end
 
