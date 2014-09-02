@@ -24,7 +24,7 @@ class MuffinTin
   def add_raw( content, content_type="text/plain" )  # muffinTin not allowed to know what contents are.
     m = Muffin.new( next_id, content, content_type )
     @muffins << m
-    return m
+    m
   end
 
   def dangerously_all_muffins   #yep, dangerous. remove eventually
@@ -72,7 +72,7 @@ class Baker
   def add_muffin_from_text( request ) # modify the Request!
     m = @muffinTin.add_raw( request.incoming_contents )
     request.record_muffin_id( m.id )
-    return m
+    m
   end
 
   def add_muffin_from_file( request ) # modify the Request!

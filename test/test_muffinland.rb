@@ -47,7 +47,7 @@ class TestRequests < Test::Unit::TestCase
     mlResponse.extract_per( exp ).should == exp
 
     t1=Time.now.to_f
-    puts "test_00_emptyDB done. #{(t1-t0)}"
+    puts "test_00_emptyDB done. #{((t1-t0)*1000).round(2)}"
   end
 
 
@@ -76,7 +76,7 @@ class TestRequests < Test::Unit::TestCase
     mlResponse.extract_per( exp ).should == exp
 
     t1=Time.now.to_f
-    puts "test_01_posts done. #{(t1-t0)}"
+    puts "test_01_posts done. #{((t1-t0)*1000).round(2)}"
   end
 
 
@@ -109,7 +109,7 @@ class TestRequests < Test::Unit::TestCase
     mlResponse.extract_per( exp ).should == exp
 
     t1=Time.now.to_f
-    puts "test_02_postAndGet done. #{(t1-t0)}"
+    puts "test_02_postAndGet done. #{((t1-t0)*1000).round(2)}"
   end
 
 #=================================================
@@ -133,7 +133,7 @@ class TestRequests < Test::Unit::TestCase
     mlResponse.extract_per( exp ).should == exp
 
     t1=Time.now.to_f
-    puts "test_03_can_change_a_muffin done. #{(t1-t0)}"
+    puts "test_03_can_change_a_muffin done. #{((t1-t0)*1000).round(2)}"
   end
 
 
@@ -219,7 +219,7 @@ class TestRequests < Test::Unit::TestCase
 
 
     t1=Time.now.to_f
-    puts "test_04_can_tag_a_muffin_to_another done. #{(t1-t0)}"
+    puts "test_04_can_tag_a_muffin_to_another done. #{((t1-t0)*1000).round(2)}"
   end
 
 
@@ -263,7 +263,7 @@ class TestRequests < Test::Unit::TestCase
     mlResponse.extract_per( exp ).should == exp
 
     t1=Time.now.to_f
-    puts "test_05_can_upload_a_file done. #{(t1-t0)}"
+    puts "test_05_can_upload_a_file done. #{((t1-t0)*1000).round(2)}"
   end
 
 
@@ -271,32 +271,16 @@ class TestRequests < Test::Unit::TestCase
   def test_06_speed_test
     puts "test_06_speed_test starting..."
     t0=Time.now.to_f
-
     app = Muffinland.new
 
-    limit = 1001
-    puts "#{limit} adds"
+    limit = 2001
+      puts "#{limit} adds"
     for i in 0..limit
       request_via_API( app, "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
-      # puts "at #{i}, t=#{Time.now.to_f - t0}, or #{(Time.now.to_f - t0)/i} per add" if i==10
-      # puts "at #{i}, t=#{Time.now.to_f - t0}, or #{(Time.now.to_f - t0)/i} per add" if i==100
-      # puts "at #{i}, t=#{Time.now.to_f - t0}, or #{(Time.now.to_f - t0)/i} per add" if i==1000
-      # puts "at #{i}, t=#{Time.now.to_f - t0}, or #{(Time.now.to_f - t0)/i} per add" if i==10000
-      # puts "at #{i}, t=#{Time.now.to_f - t0}, or #{(Time.now.to_f - t0)/i} per add" if i==20000
-      # puts "at #{i}, t=#{Time.now.to_f - t0}, or #{(Time.now.to_f - t0)/i} per add" if i==30000
-      # puts "at #{i}, t=#{Time.now.to_f - t0}, or #{(Time.now.to_f - t0)/i} per add" if i==60000
-      # puts "at #{i}, t=#{Time.now.to_f - t0}, or #{(Time.now.to_f - t0)/i} per add" if i==100000
-      # puts "at #{i}, t=#{Time.now.to_f - t0}, or #{(Time.now.to_f - t0)/i} per add" if i==200000
-      # puts "at #{i}, t=#{Time.now.to_f - t0}, or #{(Time.now.to_f - t0)/i} per add" if i==300000
     end
 
-
-
-
-
-
     t1=Time.now.to_f
-    puts "test_06_speed_test done. #{(t1-t0)}"
+    puts "test_06_speed_test done. #{((t1-t0)*1000).round(2)}"
   end
 
 

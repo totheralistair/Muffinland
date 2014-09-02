@@ -26,8 +26,6 @@ class Muffinland
 
   def handle( request ) # note: all 'handle's return 'ml_response' in a chain
 
-    puts "is a GET:#{request.get?}"
-
     request.record_arrival_time
     ml_response =
         case
@@ -83,6 +81,7 @@ class Muffinland
   end
 
   def handle_add_muffin( request )
+
     m = @theBaker.add_muffin_from_text(request)
     m ? ml_response_for_GET_muffin( m ) :
         ml_response_for_404_basic( request )
