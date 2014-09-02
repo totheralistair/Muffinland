@@ -14,6 +14,8 @@ class MuffinTin
 
   def at( id ) ; @muffins[id]  ;  end
   def next_id ;  @muffins.size ;  end
+  def default_muffin_id ; 0 ; end # let default page be page zero. Not sure this belongs here.
+
 
   def is_legit?( id )
     (id.is_a? Integer) && ( id > -1 ) && ( id < @muffins.size )
@@ -46,6 +48,7 @@ class Baker
 
   def muffin_at(id) ;  @muffinTin.at( id ) ;  end
   def is_legit?(id) ;  @muffinTin.is_legit?(id) ;  end
+  def default_muffin_id ; @muffinTin.default_muffin_id ; end
 
   def dangerously_all_muffins   #yep, dangerous. remove eventually
     @muffinTin.dangerously_all_muffins

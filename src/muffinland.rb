@@ -26,6 +26,8 @@ class Muffinland
 
   def handle( request ) # note: all 'handle's return 'ml_response' in a chain
 
+    puts "is a GET:#{request.get?}"
+
     request.record_arrival_time
     ml_response =
         case
@@ -40,7 +42,7 @@ class Muffinland
 #===== The commands to be handled (and the handling)=======
 
   def handle_get_muffin( request )
-    id = request.name_from_path ? request.id_from_path : 0 # default to page zero
+    id = request.name_from_path=="" ? @theBaker.default_muffin_id : request.id_from_path
     m = @theBaker.muffin_at_id( id )
     ml_response =
         case
