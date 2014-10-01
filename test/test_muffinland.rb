@@ -3,6 +3,8 @@ require 'rspec/expectations'
 require 'test/unit'
 require 'erubis'
 
+Test::Unit::TestCase.include RSpec::Matchers
+
 require_relative '../src/muffinland.rb'
 require_relative '../src/ml_request.rb'
 
