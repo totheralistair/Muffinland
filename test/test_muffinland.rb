@@ -5,34 +5,20 @@ require 'erubis'
 Test::Unit::TestCase.include RSpec::Matchers
 
 require_relative '../src/muffinland.rb'
+require_relative '../src/muffinland_via_rack.rb'
 require_relative '../src/ml_request.rb'
-
-class Hash
-def extract_per( sampleHash )
-# {:a=>1, :b=>2, :c=>3}.extract_per({:b=y, :c=>z}) returns {:b=>2, :c=>3}
-    sampleHash.inject({}) { |subset, (k,v) | subset[k] = self[k] ; subset }
-  end
-end
 
 
 class TestRequests < Test::Unit::TestCase
   attr_accessor :app
 
 #=== utilities ======================
-  def mark
-    Time.now.to_f
-  end
-
-  def dt_now t0
-    (( mark - t0) * 1000 ).round(2)
-  end
+  def mark ;  Time.now.to_f ;   end
+  def dt_now t0 ; (( mark - t0) * 1000 ).round(2) ;  end
 
   def new_ml_request method, path, params={}
-    Ml_RackRequest.new(
-        Rack::Request.new(
-            Rack::MockRequest.env_for( path, {:method => method, :params=>params} )
-        )
-    )
+    env = Rack::MockRequest.env_for( path, {:method => method, :params=>params} )
+    Ml_RackRequest.new(  env  )
   end
 
   def just_send method, path, params
@@ -48,15 +34,26 @@ class TestRequests < Test::Unit::TestCase
         should include expectedResult
   end
 
-  def request_via_API( app, method, path, params={} ) # app should be Muffinland (hexagon API)
-    rr = Rack::Request.new( Rack::MockRequest.env_for(path, {:method => method, :params=>params}  ) )
-    app.handle Ml_RackRequest.new( rr )
+
+  def request_via_rack_adapter_without_server( method, path, params={} ) # app should be Muffinland_via_rack
+    request = Rack::MockRequest.new( app )
+    request.request(method, path, {:params=>params}) # sends the request through the Rack call(env) chain
+  end
+
+  def page_from_template( fn, binding )
+    pageTemplate = Erubis::Eruby.new(File.open( fn, 'r').read)
+    pageTemplate.result(binding)
   end
 
 
-  def request_via_rack_without_server( app, method, path, params={} ) # app should be Muffinland_via_rack
-    request = Rack::MockRequest.new(app)
-    request.request(method, path, {:params=>params}) #this sends the request through the Rack call(env) chain
+
+  #=================================================
+  def test_z_runs_via_Rack_adapter # just check hexagon integrity, not a data check
+    viewsFolder = "../src/views/"
+    @app = Muffinland_via_rack.new(viewsFolder)
+
+    request_via_rack_adapter_without_server(  "GET", '/a?b=c', "d=e").body.
+        should == page_from_template( viewsFolder + "EmptyDB.erb" , binding )
   end
 
 

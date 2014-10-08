@@ -18,7 +18,7 @@ class Muffinland_via_rack
 
 
   def call(env) # hooks into the Rack Request chain
-    request = Ml_RackRequest.new( Rack::Request.new(env) ) # hide the 'Rack'ness
+    request = Ml_RackRequest.new( env ) # hide the 'Rack'ness
     mlResult = @ml.handle( request )
 
     template_fn = @viewsFolder + mlResult[:out_action] + ".erb"

@@ -19,8 +19,8 @@ end
 class Ml_RackRequest < Ml_request
   #note: this pile of accessors looks too complicated to me. Waiting for a simplification
 
-  def initialize( rack_request )
-    @myRequest = rack_request
+  def initialize( env )
+    @myRequest = Rack::Request.new(  env  )
     @myRequest.env["Muffinland"] = { "Times" => {} }
     @log = Logger.new(STDOUT)
     @log.level = Logger::INFO
