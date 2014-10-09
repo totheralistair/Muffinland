@@ -22,7 +22,7 @@ class MuffinTin
   end
 
   def add_raw( content, content_type="text/plain" )  # muffinTin not allowed to know what contents are.
-    m = Muffin.new( next_id, content, content_type )
+    m = Muffin.new_muffin_from( next_id, content, content_type )
     @muffins << m
     m
   end
@@ -100,10 +100,10 @@ class Baker
 
 
 
-  def change_muffin( request )
+  def change_muffin_from_text( request ) # NEEDS CLEANING
     return nil if !is_legit?( id = request.incoming_muffin_id )
     m = muffin_at( id )
-    m.new_contents( request.incoming_contents )
+    m.new_contents( request.incoming_contents ) # BAD. need content type.
     m
   end
 

@@ -65,7 +65,7 @@ class Muffinland
     ml_response = case request.command
                     when :add          then  handle_add_muffin(request)
                     when :addByFile    then  handle_add_by_file(request)
-                    when :change       then  handle_change_muffin(request)
+                    when :change       then  handle_change_muffin_by_text(request)
                     when :changeByFile then  handle_change_by_file(request)
                     when :tag          then  handle_tag_muffin(request)
                     when :makeCollection then  handle_makeCollection(request)
@@ -105,8 +105,8 @@ class Muffinland
         ml_response_for_404_basic( request )
   end
 
-  def handle_change_muffin( request )
-    m = @theBaker.change_muffin( request )
+  def handle_change_muffin_by_text( request )
+    m = @theBaker.change_muffin_from_text( request )
     m ? ml_response_for_GET_muffin( m ) :
         ml_response_for_404_basic( request )
   end
