@@ -40,9 +40,14 @@ class Ml_RackRequest
     @myRequest = Rack::Request.new(  env  )
     @myRequest.params # calling params has "side effect" of changing the Request! :(.
     # better to do it now and save later surprises :-(
-
     @myRequest.env["Muffinland"] = { "Times" => {} }
   end
+
+  def env
+    @myRequest.env
+  end
+
+
 
   def self.from_yaml yamld_request
     real_request = YAML::load StringIO.new( yamld_request )

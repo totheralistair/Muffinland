@@ -17,6 +17,7 @@ class Muffinland
     @theBaker = Baker.new         # knows the muffins
   end
 
+
 #===== Visitor Edge of the Hexagon =====
 # invoke 'handle(request)' directly.
 # input: any class that supports the Ml_request interface
@@ -33,6 +34,19 @@ class Muffinland
     request.record_completion_time
     ml_response
   end
+
+
+  def dangerously_restart_with_history(requests)
+    initialize #@thePersister
+    requests.each {|r| handle r }
+  end
+
+  def dangerously_all_posts # array of requests
+    @theHistorian.dangerously_all_posts
+  end
+
+
+
 
 
 #===== The commands to be handled (and the handling)=======

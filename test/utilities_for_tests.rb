@@ -1,8 +1,4 @@
 #=== utilities ======================
-def mark ;  Time.now.to_f ;   end
-def dt_now t0 ; (( mark - t0) * 1000 ).round(2) ;  end
-def start which ;  p "#{which}" ; mark ;  end
-def done which, t0 ;  p "#{which} done in #{dt_now(t0)}ms" ;  end
 
 
 def new_ml_request method, path, params={}

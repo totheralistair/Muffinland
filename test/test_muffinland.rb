@@ -12,25 +12,34 @@ require_relative '../test/utilities_for_tests'
 
 class TestRequests < Test::Unit::TestCase
   attr_accessor :app
+  attr_accessor :start_time, :in_method
+  def start which_method
+    @start_time = mark
+    @in_method = which_method
+    p "#{in_method}"
+  end
+  def done ;  p "#{in_method} done in #{dt}ms" ;  end
+  def mark ;  Time.now.to_f ;   end
+  def dt ; (( mark - start_time) * 1000 ).round(2) ;  end
+
 
 
   #=================================================
-  def test_z_runs_via_Ra ck_adapter # just check hexagon integrity, not a data check
-    t0 = start __method__
+  def test_z_runs_via_Rack_adapter # just check hexagon integrity, not a data check
+    start __method__
     viewsFolder = "../src/views/"
     @app = Muffinland_via_rack.new(viewsFolder)
 
     request_via_rack_adapter_without_server( app, "GET", '/a?b=c', "d=e").body.
         should == page_from_template( viewsFolder + "EmptyDB.erb" , binding )
-    done __method__, t0
+    done
   end
 
 
 
   #=================================================
   def test_00_emptyDB_is_special_case
-    t0 = start __method__
-
+    start __method__
     @app = Muffinland.new
 
     sending_expect "GET", '/aaa', {} ,
@@ -38,14 +47,13 @@ class TestRequests < Test::Unit::TestCase
                        out_action:  "EmptyDB"
                    }
 
-    done __method__, t0
+    done
   end
 
 
 #=================================================
   def test_01_gets_and_posts_return_contents_incl_404
-    t0 = start __method__
-
+    start __method__
     @app = Muffinland.new
 
     sending_expect "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" },
@@ -82,15 +90,14 @@ class TestRequests < Test::Unit::TestCase
                        out_action:   "404"
                    }
 
-    done __method__, t0
+    done
   end
 
 
 
 #=================================================
   def test_03_can_change_a_muffin
-    t0 = start __method__
-
+    start __method__
     @app = Muffinland.new
 
     just_send( "POST", '/ignored', { "Add"=>"Add", "MuffinContents"=>"a" } )
@@ -103,14 +110,13 @@ class TestRequests < Test::Unit::TestCase
                        dangerously_all_muffins_for_viewing:   ["b"]
                    }
 
-    done __method__, t0
+    done
   end
 
 
 #=================================================
   def test_04_can_tag_a_muffin_to_another
-    t0 = start __method__
-
+    start __method__
     @app = Muffinland.new
 
     just_send  "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" }
@@ -152,14 +158,13 @@ class TestRequests < Test::Unit::TestCase
                        dangerously_all_muffins_for_viewing:   ["a", "b"]
                    }
 
-    done __method__, t0
+    done
   end
 
 
   #=================================================
   def test_05_can_upload_a_file
-    t0 = start __method__
-
+    start __method__
     @app = Muffinland.new
 
     fn0 = "/Users/alistaircockburn/Desktop/Enviado desde mi iPad.txt"
@@ -194,24 +199,106 @@ class TestRequests < Test::Unit::TestCase
                        dangerously_all_muffins_for_viewing:   [file_contents_0, html_from_binary_file_1]
                    }
 
-    done __method__, t0
+    done
   end
 
 
   #=================================================
   def test_06_speed_test
-    t0 = start __method__
-
+    start __method__
     @app = Muffinland.new
 
     limit = 1
-      puts "Running timing for #{limit} adds"
+    puts "Running timing for #{limit} adds"
     for i in 0..limit
       just_send "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" }
     end
 
-    done __method__, t0
+    done
   end
+
+
+  #=================================================
+  def test_07_can_reload_history_from_array_and_continue
+    start __method__
+    @app = Muffinland.new #( Nul_persister.new )
+
+    r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    app.dangerously_restart_with_history [ r0 ]
+
+    r1 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"banaba" })
+    app.handle r1
+
+    app.dangerously_all_posts.should == [ r0, r1 ]
+
+    done
+  end
+
+
+  def test_04_can_run_history_to_from_strings_and_files
+    start __method__
+
+    @app = Muffinland.new #( Nul_persister.new )
+
+    # pre-test: make sure can serialize and reconstitute okay
+    r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
+    r0.to_yaml.should == Ml_RackRequest::from_yaml( r0.to_yaml ).to_yaml
+
+    # 1st, fake a history in a file:
+    r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"less chickens" })
+    array_out_to_file( [ r0.to_yaml ], history_in_file='mlhistory.txt' )
+
+    # see if that reads OK:
+    requests = requests_from_yaml_stream2( File.open( history_in_file) )
+    app.dangerously_restart_with_history requests
+    sending_expect "GET", '/0', {},
+                   {
+                       out_action:   "GET_named_page",
+                       muffin_id:   0,
+                       muffin_body: "less chickens"
+                   }
+
+    # then add to the history in the ordinary way
+    sending_expect 'POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"more chickens" } ,
+                   {
+                       out_action:   "GET_named_page",
+                       muffin_id:   1,
+                       muffin_body: "more chickens"
+                   }
+
+    yamld_history = yaml_my app.dangerously_all_posts     # notice I didn't check it yet. lazy
+
+    # finally, add to the history using faked-up string / StringIO, see if that works:
+    r2 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"end of chickens" })
+    history_in_string = array_out_to_string ( yamld_history << r2.to_yaml )
+
+    requests = requests_from_yaml_stream2( StringIO.new( history_in_string) )
+    app.dangerously_restart_with_history requests
+
+    sending_expect "GET", '/1', {},
+                   {
+                       out_action:   "GET_named_page",
+                       muffin_id:   1,
+                       muffin_body: "more chickens"
+                   }
+
+    sending_expect "GET", '/2', {},
+                   {
+                       out_action:   "GET_named_page",
+                       muffin_id:   2,
+                       muffin_body: "end of chickens"
+                   }
+
+    sending_expect "GET", '/3', {},
+                   {
+                       out_action:   "404"
+                   }
+    # if that all works, loading/unloading/faking history w arrays/strings/files all work :-)
+
+    done
+  end
+
+
 
 
 
