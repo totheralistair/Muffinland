@@ -2,7 +2,7 @@
 require './src/muffinland_via_rack'
 require './src/persisters'
 
-run Muffinland_via_rack.new( Smallwebhexagon.new(Nul_persister.new),"./src/views/" )
+run Muffinland_via_rack.new( Muffinland.new(Nul_persister.new),"./src/views/" )
 
 
 
