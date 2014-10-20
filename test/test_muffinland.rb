@@ -3,11 +3,12 @@ require 'rspec/expectations'
 require 'test/unit'
 require 'erubis'
 #Test::Unit::TestCase.include RSpec::Matchers
-
 require_relative '../src/muffinland.rb'
 require_relative '../src/muffinland_via_rack.rb'
 require_relative '../src/ml_request.rb'
 require_relative '../test/utilities_for_tests'
+require_relative '../src/persisters'
+
 
 
 class TestRequests < Test::Unit::TestCase
@@ -28,7 +29,8 @@ class TestRequests < Test::Unit::TestCase
   def test_z_runs_via_Rack_adapter # just check hexagon integrity, not a data check
     start __method__
     viewsFolder = "../src/views/"
-    @app = Muffinland_via_rack.new(viewsFolder)
+    @app = Muffinland_via_rack.new( Muffinland.new( Nul_persister.new ), viewsFolder )
+
 
     request_via_rack_adapter_without_server( app, "GET", '/a?b=c', "d=e").body.
         should == page_from_template( viewsFolder + "EmptyDB.erb" , binding )
@@ -40,7 +42,7 @@ class TestRequests < Test::Unit::TestCase
   #=================================================
   def test_00_emptyDB_is_special_case
     start __method__
-    @app = Muffinland.new
+    @app = Muffinland.new( Nul_persister.new )
 
     sending_expect "GET", '/aaa', {} ,
                    {
@@ -54,7 +56,7 @@ class TestRequests < Test::Unit::TestCase
 #=================================================
   def test_01_gets_and_posts_return_contents_incl_404
     start __method__
-    @app = Muffinland.new
+    @app = Muffinland.new( Nul_persister.new )
 
     sending_expect "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" },
                    {
@@ -98,7 +100,7 @@ class TestRequests < Test::Unit::TestCase
 #=================================================
   def test_03_can_change_a_muffin
     start __method__
-    @app = Muffinland.new
+    @app = Muffinland.new( Nul_persister.new )
 
     just_send( "POST", '/ignored', { "Add"=>"Add", "MuffinContents"=>"a" } )
 
@@ -117,7 +119,7 @@ class TestRequests < Test::Unit::TestCase
 #=================================================
   def test_04_can_tag_a_muffin_to_another
     start __method__
-    @app = Muffinland.new
+    @app = Muffinland.new( Nul_persister.new )
 
     just_send  "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" }
     just_send  "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"b" }
@@ -165,7 +167,7 @@ class TestRequests < Test::Unit::TestCase
   #=================================================
   def test_05_can_upload_a_file
     start __method__
-    @app = Muffinland.new
+    @app = Muffinland.new( Nul_persister.new )
 
     fn0 = "/Users/alistaircockburn/Desktop/Enviado desde mi iPad.txt"
     file_contents_0 = File.read(fn0)
@@ -206,7 +208,7 @@ class TestRequests < Test::Unit::TestCase
   #=================================================
   def test_06_speed_test
     start __method__
-    @app = Muffinland.new
+    @app = Muffinland.new( Nul_persister.new )
 
     limit = 1
     puts "Running timing for #{limit} adds"
@@ -221,7 +223,7 @@ class TestRequests < Test::Unit::TestCase
   #=================================================
   def test_07_can_reload_history_from_array_and_continue
     start __method__
-    @app = Muffinland.new #( Nul_persister.new )
+    @app = Muffinland.new( Nul_persister.new )
 
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
     app.dangerously_restart_with_history [ r0 ]
@@ -235,16 +237,46 @@ class TestRequests < Test::Unit::TestCase
   end
 
 
-  def test_04_can_run_history_to_from_strings_and_files
+  #=================================================
+  def test_08_nul_persister_does_nothing_or_just_prints
     start __method__
 
-    @app = Muffinland.new #( Nul_persister.new )
+    @app = Muffinland.new( Nul_persister.new )
+    r0 = new_ml_request "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" }
+    app.handle r0
+
+    done
+  end
+
+
+  #=================================================
+  def test_09_file_persister_adds_to_file
+    start __method__
+
+    out_fn = 'mlhistory.txt'
+    @app = Muffinland.new File_persister.new( out_fn )
+
+    app.handle new_ml_request( "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" } )
+    File.readlines(out_fn).should == File.readlines('mlhistory_reference1.txt')
+
+    app.handle new_ml_request( "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"b" } )
+    File.readlines(out_fn).should == File.readlines('mlhistory_reference2.txt')
+
+    done
+  end
+
+
+  #=================================================
+  def test_10_can_YAML_history_to_from_strings_and_files # note: not using persisters (yet)!
+    start __method__
+
+    @app = Muffinland.new( Nul_persister.new )
 
     # pre-test: make sure can serialize and reconstitute okay
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"apple" })
     r0.to_yaml.should == Ml_RackRequest::from_yaml( r0.to_yaml ).to_yaml
 
-    # 1st, fake a history in a file:
+    # now, fake a history in a file:
     r0 = new_ml_request('POST', '/ignored',{ "Add"=>"Add", "MuffinContents"=>"less chickens" })
     array_out_to_file( [ r0.to_yaml ], history_in_file='mlhistory.txt' )
 
@@ -300,7 +332,10 @@ class TestRequests < Test::Unit::TestCase
 
 
 
-
+  #=================================================
+  def test_11_can_persist_YAML_to_from_strings_and_files # note: now with persisters!
+    #next test
+  end
 
 #=================================================
 

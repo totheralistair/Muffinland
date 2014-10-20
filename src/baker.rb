@@ -69,7 +69,7 @@ class Baker
 
   def add_muffin_from_text( request ) # modify the Request!
     m = @muffinTin.add_raw( request.incoming_contents )
-    request.record_muffin_id( m.id )
+# not yet    request.record_muffin_id( m.id )
     m
   end
 
@@ -77,7 +77,7 @@ class Baker
     c, t = multipart_contents_and_type( request )
     return nil unless c && t  #make sure there are contents to add
     m = @muffinTin.add_raw( c, t )
-    request.record_muffin_id( m.id )
+# not yet    request.record_muffin_id( m.id )
     m
   end
 

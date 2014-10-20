@@ -12,9 +12,10 @@ require_relative '../src/ml_request'
 class Muffinland
 # Muffinland knows global policies and environment, not histories and private things.
 
-  def initialize
-    @theHistorian = Historian.new # knows the history of requests
+  def initialize persister
+    @theHistorian = Historian.new persister # knows the history of requests
     @theBaker = Baker.new         # knows the muffins
+    @thePersister = persister
   end
 
 
@@ -25,19 +26,19 @@ class Muffinland
 
   def handle( request ) # note: all 'handle's return 'ml_response' in a chain
 
-    request.record_arrival_time
+# not yet    request.record_arrival_time
     ml_response =
         case
           when request.get? then handle_get_muffin(request)
           when request.post? then handle_post(request)
         end
-    request.record_completion_time
+# not yet    request.record_completion_time
     ml_response
   end
 
 
   def dangerously_restart_with_history(requests)
-    initialize #@thePersister
+    initialize @thePersister
     requests.each {|r| handle r }
   end
 

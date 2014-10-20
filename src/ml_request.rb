@@ -40,7 +40,7 @@ class Ml_RackRequest
     @myRequest = Rack::Request.new(  env  )
     @myRequest.params # calling params has "side effect" of changing the Request! :(.
     # better to do it now and save later surprises :-(
-    @myRequest.env["Muffinland"] = { "Times" => {} }
+#not yet    @myRequest.env["Muffinland"] = { "Times" => {} }
   end
 
   def env
@@ -87,7 +87,6 @@ class Ml_RackRequest
   def theParams ;  @myRequest.params ; end
   def thePath ;  @myRequest.path ; end
   def theMuffinlandTags ;  theEnv["Muffinland"] ; end
-  def theTimes ;  theMuffinlandTags["Times"] ; end
 
 
   def get?; @myRequest.get? ;  end
@@ -129,16 +128,6 @@ class Ml_RackRequest
 
   # Record Muffinland sh!t in the request
 
-  def record_in_request( tag, valueString ) ;  theMuffinlandTags[tag] = valueString ;  end
-  def record_time( tag ) ; t=Time.now;  theTimes[tag] = "#{t.to_f}";  end
-
-  def record_muffin_id( id ) ;  record_in_request( "muffin_ID", id.to_s ) ;  end
-  def record_arrival_time ;  record_time( "Arrived") ; end
-  def record_completion_time ; record_time( "Completed");  end
-
-  def arrival_time ; @times["Arrived"] ;  end
-  def completion_time ;  @times["Completed"] ; end
-  def execution_time ; t = completion_time.to_f - arrival_time.to_f ;end
 
 
   def id_from_name( name ) ;  number_or_nil(name) ;  end
@@ -146,6 +135,24 @@ class Ml_RackRequest
     i= s.to_i
     i.to_s == s ? i : nil
   end
+
+#=====  STUFF UNUSED CURRENTLY, FOR FUTURE DATE.... =====
+  # def record_in_request( tag, valueString ) ;
+  #   # theMuffinlandTags[tag] = valueString ;
+  # end
+  #
+  # def record_muffin_id( id ) ;  record_in_request( "muffin_ID", id.to_s ) ;  end
+
+
+  # def theTimes ;  theMuffinlandTags["Times"] ; end
+  # def record_time( tag ) ; t=Time.now;  theTimes[tag] = "#{t.to_f}";  end
+  # def record_arrival_time ;  record_time( "Arrived") ; end
+  # def record_completion_time ; record_time( "Completed");  end
+  # def arrival_time ; @times["Arrived"] ;  end
+  # def completion_time ;  @times["Completed"] ; end
+  # def execution_time ; t = completion_time.to_f - arrival_time.to_f ;end
+
+
 
 end
 

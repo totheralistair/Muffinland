@@ -3,7 +3,8 @@
 
 class Historian
 
-  def initialize
+  def initialize persister
+    @thePersister = persister
     @thePosts = Array.new
   end
 
@@ -13,6 +14,7 @@ class Historian
 
   def add_request( request )
     @thePosts << request
+    @thePersister.handle_new_post request
   end
 
 end

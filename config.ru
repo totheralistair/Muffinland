@@ -1,6 +1,8 @@
 # Here is how to go through Rackup
 require './src/muffinland_via_rack'
-run Muffinland_via_rack.new("./src/views/")
+require './src/persisters'
+
+run Muffinland_via_rack.new( Smallwebhexagon.new(Nul_persister.new),"./src/views/" )
 
 
 
