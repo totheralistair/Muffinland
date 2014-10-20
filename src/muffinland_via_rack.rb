@@ -1,4 +1,3 @@
-require 'logger'
 require 'rack'
 require_relative '../src/muffinland'
 require_relative '../src/ml_request'
@@ -12,8 +11,6 @@ class Muffinland_via_rack
   def initialize( viewsFolder ) #ugh on passing viewsFolder in :(
     @viewsFolder = viewsFolder
     @ml = Muffinland.new
-    @log = Logger.new(STDOUT)
-    @log.level = Logger::INFO
   end
 
 

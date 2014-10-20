@@ -2,7 +2,6 @@
 # Alistair Cockburn and a couple of really nice friends
 # ideas: email, DTO test,
 
-require 'logger'
 require_relative '../src/ml_responses' # the API output defined for Muffinland
 require_relative '../src/baker'
 require_relative '../src/muffin'
@@ -16,7 +15,6 @@ class Muffinland
   def initialize
     @theHistorian = Historian.new # knows the history of requests
     @theBaker = Baker.new         # knows the muffins
-    @log = Logger.new(STDOUT); @log.level = Logger::INFO
   end
 
 #===== Visitor Edge of the Hexagon =====
@@ -44,7 +42,7 @@ class Muffinland
     m = @theBaker.muffin_at_id( id )
     ml_response =
         case
-          when @theHistorian.no_history_to_report?
+          when @theBaker.aint_got_no_muffins_yo?
             ml_response_for_EmptyDB
           when m
             ml_response_for_GET_muffin( m )

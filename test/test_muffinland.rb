@@ -2,66 +2,34 @@ require 'rack/test'
 require 'rspec/expectations'
 require 'test/unit'
 require 'erubis'
-Test::Unit::TestCase.include RSpec::Matchers
+#Test::Unit::TestCase.include RSpec::Matchers
 
 require_relative '../src/muffinland.rb'
 require_relative '../src/muffinland_via_rack.rb'
 require_relative '../src/ml_request.rb'
+require_relative '../test/utilities_for_tests'
 
 
 class TestRequests < Test::Unit::TestCase
   attr_accessor :app
 
-#=== utilities ======================
-  def mark ;  Time.now.to_f ;   end
-  def dt_now t0 ; (( mark - t0) * 1000 ).round(2) ;  end
-
-  def new_ml_request method, path, params={}
-    env = Rack::MockRequest.env_for( path, {:method => method, :params=>params} )
-    Ml_RackRequest.new(  env  )
-  end
-
-  def just_send method, path, params
-    app.handle new_ml_request( method, path, params )
-  end
-
-  def send_receive method, path, params   # same but for different reading
-    app.handle new_ml_request( method, path, params )
-  end
-
-  def sending_expect method, path, params, expectedResult
-    (send_receive( method, path, params ) ).
-        should include expectedResult
-  end
-
-
-  def request_via_rack_adapter_without_server( method, path, params={} ) # app should be Muffinland_via_rack
-    request = Rack::MockRequest.new( app )
-    request.request(method, path, {:params=>params}) # sends the request through the Rack call(env) chain
-  end
-
-  def page_from_template( fn, binding )
-    pageTemplate = Erubis::Eruby.new(File.open( fn, 'r').read)
-    pageTemplate.result(binding)
-  end
-
-
 
   #=================================================
-  def test_z_runs_via_Rack_adapter # just check hexagon integrity, not a data check
+  def test_z_runs_via_Ra ck_adapter # just check hexagon integrity, not a data check
+    t0 = start __method__
     viewsFolder = "../src/views/"
     @app = Muffinland_via_rack.new(viewsFolder)
 
-    request_via_rack_adapter_without_server(  "GET", '/a?b=c', "d=e").body.
+    request_via_rack_adapter_without_server( app, "GET", '/a?b=c', "d=e").body.
         should == page_from_template( viewsFolder + "EmptyDB.erb" , binding )
+    done __method__, t0
   end
 
 
 
   #=================================================
   def test_00_emptyDB_is_special_case
-    puts "test_00_emptyDB starting..."
-    t0 = mark
+    t0 = start __method__
 
     @app = Muffinland.new
 
@@ -70,14 +38,13 @@ class TestRequests < Test::Unit::TestCase
                        out_action:  "EmptyDB"
                    }
 
-    puts "test_00_emptyDB done in #{dt_now(t0)}"
+    done __method__, t0
   end
 
 
 #=================================================
   def test_01_gets_and_posts_return_contents_incl_404
-    puts "test_01_posts starting..."
-    t0 = mark
+    t0 = start __method__
 
     @app = Muffinland.new
 
@@ -115,15 +82,14 @@ class TestRequests < Test::Unit::TestCase
                        out_action:   "404"
                    }
 
-    puts "test_01_posts done in #{dt_now(t0)}"
+    done __method__, t0
   end
 
 
 
 #=================================================
   def test_03_can_change_a_muffin
-    puts "test_03_can_change_a_muffin starting..."
-    t0 = mark
+    t0 = start __method__
 
     @app = Muffinland.new
 
@@ -137,14 +103,13 @@ class TestRequests < Test::Unit::TestCase
                        dangerously_all_muffins_for_viewing:   ["b"]
                    }
 
-    puts "test_03_can_change_a_muffin done in #{dt_now(t0)}"
+    done __method__, t0
   end
 
 
 #=================================================
   def test_04_can_tag_a_muffin_to_another
-    puts "test_04_can_tag_a_muffin_to_another starting..."
-    t0 = mark
+    t0 = start __method__
 
     @app = Muffinland.new
 
@@ -187,14 +152,13 @@ class TestRequests < Test::Unit::TestCase
                        dangerously_all_muffins_for_viewing:   ["a", "b"]
                    }
 
-    puts "test_04_can_tag_a_muffin_to_another done in #{dt_now(t0)}"
+    done __method__, t0
   end
 
 
   #=================================================
   def test_05_can_upload_a_file
-    puts "test_05_can_upload_a_file starting..."
-    t0 = mark
+    t0 = start __method__
 
     @app = Muffinland.new
 
@@ -230,14 +194,13 @@ class TestRequests < Test::Unit::TestCase
                        dangerously_all_muffins_for_viewing:   [file_contents_0, html_from_binary_file_1]
                    }
 
-    puts "test_05_can_upload_a_file done in #{dt_now(t0)}"
+    done __method__, t0
   end
 
 
   #=================================================
   def test_06_speed_test
-    puts "test_06_speed_test starting..."
-    t0 = mark
+    t0 = start __method__
 
     @app = Muffinland.new
 
@@ -247,7 +210,7 @@ class TestRequests < Test::Unit::TestCase
       just_send "POST", '/ignored',{ "Add"=>"Add", "MuffinContents"=>"a" }
     end
 
-    puts "test_06_speed_test done in #{dt_now(t0)}"
+    done __method__, t0
   end
 
 

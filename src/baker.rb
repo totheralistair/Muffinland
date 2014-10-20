@@ -12,6 +12,7 @@ class MuffinTin
     @muffins = Array.new
   end
 
+  def empty? ;  @muffins.empty? ;  end
   def at( id ) ; @muffins[id]  ;  end
   def next_id ;  @muffins.size ;  end
   def default_muffin_id ; 0 ; end # let default page be page zero. Not sure this belongs here.
@@ -31,8 +32,6 @@ class MuffinTin
     @muffins
   end
 
-
-
 end
 
 #===== class Baker ==============
@@ -42,13 +41,12 @@ class Baker
 
   def initialize
     @muffinTin = MuffinTin.new
-    @log = Logger.new(STDOUT)
-    @log.level = Logger::INFO
   end
 
   def muffin_at(id) ;  @muffinTin.at( id ) ;  end
   def is_legit?(id) ;  @muffinTin.is_legit?(id) ;  end
   def default_muffin_id ; @muffinTin.default_muffin_id ; end
+  def aint_got_no_muffins_yo? ;  @muffinTin.empty? ;  end
 
   def dangerously_all_muffins   #yep, dangerous. remove eventually
     @muffinTin.dangerously_all_muffins
